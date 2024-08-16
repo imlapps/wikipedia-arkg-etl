@@ -14,7 +14,6 @@ from etl.models.types import (
     AntiRecommendationKey,
     DataFileName,
     EnrichmentType,
-    Iri,
     ModelResponse,
     RecordKey,
 )
@@ -53,17 +52,9 @@ def input_data_files_directory_path() -> Path:
 
 
 @pytest.fixture(scope="session")
-def base_iri() -> Iri:
-    """Return a base IRI for an RDF Store."""
-
-    return "https://etl/"
-
-
-@pytest.fixture(scope="session")
 def input_config(
     data_file_names: tuple[DataFileName, ...],
     input_data_files_directory_path: Path,
-    base_iri: Iri,
 ) -> InputConfig:
     """
     Return an InputConfig object.
@@ -76,7 +67,6 @@ def input_config(
             data_file_names_default=data_file_names,
             distance_strategy_default=DistanceStrategy.COSINE,
             score_threshold_default=0.5,
-            etl_base_iri_default=base_iri,
         )
     pytest.skip(reason="don't have input data files.")
 

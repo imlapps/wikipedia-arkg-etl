@@ -3,7 +3,7 @@ from typing import override
 from pyoxigraph import Literal, NamedNode, Quad, Store
 
 from etl.models import WIKIPEDIA_BASE_URL
-from etl.models.types import AntiRecommendationKey, Iri, Predicate, RecordKey
+from etl.models.types import AntiRecommendationKey, Predicate, RecordKey
 from etl.pipelines.kg_builder_pipeline import KgBuilderPipeline
 
 
@@ -14,8 +14,8 @@ class ArkgBuilderPipeline(KgBuilderPipeline):
     Constructs a RDF store from a tuple of anti-recommendation graphs.
     """
 
-    def __init__(self, base_iri: Iri) -> None:
-        self.__base_iri = base_iri
+    def __init__(self) -> None:
+        self.__base_iri = ""
         self.__store = Store()
 
     def __add_title_quad_to_store(self, record_key: RecordKey) -> None:

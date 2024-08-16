@@ -23,7 +23,6 @@ definitions = Definitions(
             data_file_names_default=("mini-wikipedia.output.txt",),
             distance_strategy_default=DistanceStrategy.EUCLIDEAN_DISTANCE,
             score_threshold_default=0.5,
-            etl_base_iri_default="https://etl/",
         ),
         "openai_settings": openai_settings,
         "openai_pipeline_config": OpenaiPipelineConfig(

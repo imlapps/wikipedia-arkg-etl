@@ -180,7 +180,6 @@ def test_wikipedia_arkg(
     anti_recommendation_graph: tuple[
         tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
     ],
-    input_config: InputConfig,
 ) -> None:
     """Test that wikipedia_arkg calls a method required to build an Anti-Recommendation Knowledge Graph."""
 
@@ -192,7 +191,6 @@ def test_wikipedia_arkg(
         AntiRecommendationGraphTuple(
             anti_recommendation_graphs=anti_recommendation_graph
         ),
-        input_config,
     )
 
     mock_arkgbuilderpipeline__construct_graph.assert_called_once()

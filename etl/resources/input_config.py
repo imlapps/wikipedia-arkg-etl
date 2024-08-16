@@ -9,7 +9,7 @@ from dagster import ConfigurableResource, EnvVar
 from langchain_community.vectorstores.utils import DistanceStrategy
 
 if TYPE_CHECKING:
-    from etl.models.types import DataFileName, Iri, ScoreThreshold
+    from etl.models.types import DataFileName, ScoreThreshold
 
 
 class InputConfig(ConfigurableResource):  # type: ignore[misc]
@@ -21,7 +21,6 @@ class InputConfig(ConfigurableResource):  # type: ignore[misc]
     - data_file_names: A list of data file names,
     - distance_strategy: The distance strategy that will be used to retrieve vector embeddings from the embedding store,
     - score_threshold: The score threshold for Documents retrieved from the embedding store,
-    - etl_base_iri: The ETL's base IRI for the Anti-Recommendation Knowledge Graph.
     """
 
     @dataclass(frozen=True)
@@ -34,13 +33,11 @@ class InputConfig(ConfigurableResource):  # type: ignore[misc]
         data_file_paths: frozenset[Path]
         distance_strategy: DistanceStrategy
         score_threshold: ScoreThreshold
-        etl_base_iri: Iri
 
     data_files_directory_path: str
     data_file_names: list[str]
     distance_strategy: str
     score_threshold: float
-    etl_base_iri: str
 
     @classmethod
     def default(  # noqa: PLR0913
@@ -50,7 +47,6 @@ class InputConfig(ConfigurableResource):  # type: ignore[misc]
         data_file_names_default: tuple[DataFileName, ...],
         distance_strategy_default: DistanceStrategy,
         score_threshold_default: ScoreThreshold,
-        etl_base_iri_default: Iri,
     ) -> InputConfig:
         """Return an InputConfig object using only default parameters."""
 
@@ -59,7 +55,6 @@ class InputConfig(ConfigurableResource):  # type: ignore[misc]
             data_file_names=list(data_file_names_default),
             distance_strategy=distance_strategy_default.value,
             score_threshold=score_threshold_default,
-            etl_base_iri=etl_base_iri_default,
         )
 
     @classmethod
@@ -70,7 +65,6 @@ class InputConfig(ConfigurableResource):  # type: ignore[misc]
         data_file_names_default: tuple[DataFileName, ...],
         distance_strategy_default: DistanceStrategy,
         score_threshold_default: ScoreThreshold,
-        etl_base_iri_default: Iri,
     ) -> InputConfig:
         """Return an InputConfig object, with parameter values obtained from environment variables."""
 
@@ -91,7 +85,6 @@ class InputConfig(ConfigurableResource):  # type: ignore[misc]
             score_threshold=float(
                 str(EnvVar("SCORE_THRESHOLD").get_value(str(score_threshold_default)))
             ),
-            etl_base_iri=EnvVar("ETL_BASE_IRI").get_value(etl_base_iri_default),
         )
 
     def parse(self) -> Parsed:
@@ -109,5 +102,4 @@ class InputConfig(ConfigurableResource):  # type: ignore[misc]
             ),
             distance_strategy=DistanceStrategy(self.distance_strategy),
             score_threshold=self.score_threshold,
-            etl_base_iri=self.etl_base_iri,
         )
