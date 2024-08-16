@@ -4,7 +4,7 @@ from langchain.docstore.document import Document
 from langchain.schema.runnable import RunnableSequence
 from langchain_community.vectorstores import FAISS
 from pytest_mock import MockFixture
-
+from pyoxigraph import Store
 from etl.assets import (
     documents_of_wikipedia_articles_with_summaries,
     wikipedia_anti_recommendations,
@@ -20,9 +20,16 @@ from etl.models import (
     DocumentTuple,
     RecordTuple,
     wikipedia,
+    ArkgInstance,
 )
-from etl.models.types import AntiRecommendationKey, ModelResponse, RecordKey
-from etl.pipelines import ArkgBuilderPipeline
+
+from etl.models.types import (
+    AntiRecommendationKey,
+    ModelResponse,
+    RecordKey,
+    SparqlQuery,
+)
+
 from etl.resources import (
     InputConfig,
     OpenaiPipelineConfig,
@@ -176,21 +183,32 @@ def test_wikipedia_anti_recommendations_json_file(
 
 
 def test_wikipedia_arkg(
-    session_mocker: MockFixture,
     anti_recommendation_graph: tuple[
         tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
     ],
+    output_config: OutputConfig,
+    anti_recommendation_node_query: SparqlQuery,
+    anti_recommendation_key: AntiRecommendationKey,
 ) -> None:
     """Test that wikipedia_arkg calls a method required to build an Anti-Recommendation Knowledge Graph."""
-
-    mock_arkgbuilderpipeline__construct_graph = session_mocker.patch.object(
-        ArkgBuilderPipeline, "construct_graph", return_value=None
-    )
 
     wikipedia_arkg(
         AntiRecommendationGraphTuple(
             anti_recommendation_graphs=anti_recommendation_graph
         ),
+        output_config,
     )
 
-    mock_arkgbuilderpipeline__construct_graph.assert_called_once()
+    store = Store()
+    store.load(
+        input=output_config.parse().wikipedia_arkg_file_path,
+        mime_type="text/turtle",
+    )
+    anti_recommendation_node = next(store.query(anti_recommendation_node_query))
+
+    assert (
+        anti_recommendation_node["anti_recommendation"].value
+        == ArkgInstance.anti_recommendation_iri(
+            anti_recommendation_key.replace(" ", "_")
+        ).value
+    )

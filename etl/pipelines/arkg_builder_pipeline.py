@@ -33,7 +33,11 @@ class ArkgBuilderPipeline:
             )
 
             self.__store.add(
-                Quad(anti_recommendation_instance, RDF_TYPE, ArkgSchema.RECOMMENDATION)
+                Quad(
+                    anti_recommendation_instance,
+                    RDF_TYPE,
+                    ArkgSchema.RECOMMENDATION,
+                )
             )
             self.__store.add(
                 Quad(

@@ -16,7 +16,9 @@ from etl.models.types import (
     EnrichmentType,
     ModelResponse,
     RecordKey,
+    SparqlQuery,
 )
+
 from etl.pipelines import (
     AntiRecommendationRetrievalPipeline,
     OpenaiEmbeddingPipeline,
@@ -287,3 +289,14 @@ def anti_recommendation_graph(
     """Return a tuple containing an anti_recommendation_graph."""
 
     return ((record_key, (anti_recommendation_key,)),)
+
+
+@pytest.fixture(scope="session")
+def anti_recommendation_node_query(record_key: RecordKey) -> SparqlQuery:
+
+    return f"""
+    PREFIX schema: <http://schema.org/>
+    PREFIX wb: <https://en.wikipedia.org/wiki/>
+
+    SELECT ?anti_recommendation WHERE {{?anti_recommendation schema:itemReviewed wb:{record_key}}}
+    """

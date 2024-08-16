@@ -162,9 +162,12 @@ def wikipedia_anti_recommendations_json_file(
 @asset
 def wikipedia_arkg(
     wikipedia_anti_recommendations: AntiRecommendationGraphTuple,
+    output_config: OutputConfig,
 ) -> None:
     """Materialize a Wikipedia Anti-Recommendation Knowledge Graph asset."""
 
     ArkgBuilderPipeline().construct_graph(
         wikipedia_anti_recommendations.anti_recommendation_graphs
+    ).dump(
+        output=output_config.parse().wikipedia_arkg_file_path, mime_type="text/turtle"
     )
