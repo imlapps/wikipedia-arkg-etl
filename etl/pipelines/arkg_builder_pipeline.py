@@ -1,15 +1,12 @@
-from typing import override
-
 from pyoxigraph import Literal, NamedNode, Quad, Store
 
 from etl.models import WIKIPEDIA_BASE_URL
 from etl.models.types import AntiRecommendationKey, Predicate, RecordKey
-from etl.pipelines.kg_builder_pipeline import KgBuilderPipeline
 
 
-class ArkgBuilderPipeline(KgBuilderPipeline):
+class ArkgBuilderPipeline:
     """
-    A concrete implementation of KgBuilderPipeline.
+    A pipeline to build Anti-Recommendation Knowledge Graphs.
 
     Constructs a RDF store from a tuple of anti-recommendation graphs.
     """
@@ -76,7 +73,6 @@ class ArkgBuilderPipeline(KgBuilderPipeline):
                 )
             )
 
-    @override
     def construct_graph(
         self,
         graphs: tuple[tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...],
