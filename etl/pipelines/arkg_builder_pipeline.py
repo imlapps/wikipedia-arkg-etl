@@ -1,7 +1,9 @@
+from typing import Annotated
+from pydantic import Field
 from pyoxigraph import Literal, NamedNode, Quad, Store
 
-from etl.models import WIKIPEDIA_BASE_URL
-from etl.models.types import AntiRecommendationKey, Predicate, RecordKey
+from etl.models import WIKIPEDIA_BASE_URL, RDF_TYPE, ArkgInstance, ArkgSchema
+from etl.models.types import AntiRecommendationKey, RecordKey
 
 
 class ArkgBuilderPipeline:
@@ -12,64 +14,32 @@ class ArkgBuilderPipeline:
     """
 
     def __init__(self) -> None:
-        self.__base_iri = ""
+
         self.__store = Store()
-
-    def __add_title_quad_to_store(self, record_key: RecordKey) -> None:
-        """
-        Add a RDF Quad with a `HAS_TITLE` predicate to the RDF Store.
-
-        The subject of the Quad is the Store's base iri + record_key.
-        The object of the Quad is the record_key.
-        """
-
-        self.__store.add(
-            Quad(
-                NamedNode(self.__base_iri + record_key.replace(" ", "_")),
-                NamedNode(self.__base_iri + Predicate.HAS_TITLE.value),
-                Literal(record_key),
-            )
-        )
-
-    def __add_url_quad_to_store(self, record_key: RecordKey) -> None:
-        """
-        Add a RDF Quad with a `HAS_URL` predicate to the RDF Store.
-
-        The subject of the Quad is the Store's base iri + record_key.
-        The object of the Quad is Wikipedia's base url + record_key.
-        """
-
-        self.__store.add(
-            Quad(
-                NamedNode(self.__base_iri + record_key.replace(" ", "_")),
-                NamedNode(self.__base_iri + Predicate.HAS_URL.value),
-                Literal(WIKIPEDIA_BASE_URL + record_key),
-            )
-        )
 
     def __add_anti_recommendation_quads_to_store(
         self,
-        anti_recommendation_graph: tuple[RecordKey, tuple[AntiRecommendationKey, ...]],
+        *,
+        anti_recommendation_keys: tuple[AntiRecommendationKey, ...],
+        wikipedia_page_url: Annotated[
+            str, Field(min_length=1, json_schema_extra={"strip_whitespace": True})
+        ],
     ) -> None:
-        """
-        Add RDF Quads with `HAS_ANTI_RECOMMENDATION` predicates to the RDF Store.
 
-        The subject of each Quad is the Store's base iri + record_key.
-        The object of each Quad is the Store's base iri + anti_recommendation_key.
-        """
+        for anti_recommendation_key in anti_recommendation_keys:
 
-        for anti_recommendation_key in anti_recommendation_graph[1]:
+            anti_recommendation_instance = ArkgInstance.anti_recommendation_iri(
+                record_key=anti_recommendation_key.replace(" ", "_")
+            )
+
+            self.__store.add(
+                Quad(anti_recommendation_instance, RDF_TYPE, ArkgSchema.RECOMMENDATION)
+            )
             self.__store.add(
                 Quad(
-                    NamedNode(
-                        self.__base_iri + anti_recommendation_graph[0].replace(" ", "_")
-                    ),
-                    NamedNode(
-                        self.__base_iri + Predicate.HAS_ANTI_RECOMMENDATION.value
-                    ),
-                    NamedNode(
-                        self.__base_iri + anti_recommendation_key.replace(" ", "_")
-                    ),
+                    anti_recommendation_instance,
+                    ArkgSchema.ITEMREVIEWED,
+                    NamedNode(wikipedia_page_url),
                 )
             )
 
@@ -80,8 +50,35 @@ class ArkgBuilderPipeline:
         """Return a RDF Store populated with anti_recommendation_graphs."""
 
         for graph in graphs:
-            self.__add_title_quad_to_store(graph[0])
-            self.__add_url_quad_to_store(graph[0])
-            self.__add_anti_recommendation_quads_to_store(graph)
+            record_key = graph[0].replace(" ", "_")
+            wikipedia_page_url = WIKIPEDIA_BASE_URL + record_key
+
+            self.__store.add(
+                Quad(
+                    NamedNode(wikipedia_page_url),
+                    RDF_TYPE,
+                    ArkgSchema.WEBPAGE,
+                ),
+            )
+
+            self.__store.add(
+                Quad(
+                    NamedNode(wikipedia_page_url),
+                    ArkgSchema.TITLE,
+                    Literal(record_key),
+                )
+            )
+
+            self.__store.add(
+                Quad(
+                    NamedNode(wikipedia_page_url),
+                    ArkgSchema.URL,
+                    Literal(wikipedia_page_url),
+                )
+            )
+
+            self.__add_anti_recommendation_quads_to_store(
+                anti_recommendation_keys=graph[1], wikipedia_page_url=wikipedia_page_url
+            )
 
         return self.__store

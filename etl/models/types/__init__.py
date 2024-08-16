@@ -11,7 +11,6 @@ from .open_ai_embedding_model_name import (
 from .open_ai_generative_model_name import (
     OpenAiGenerativeModelName as OpenAiGenerativeModelName,
 )
-from .predicate import Predicate as Predicate
 from .record_key import RecordKey as RecordKey
 from .score_threshold import ScoreThreshold as ScoreThreshold
 from .summary import Summary as Summary
