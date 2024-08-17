@@ -186,23 +186,24 @@ def test_wikipedia_arkg(
     anti_recommendation_graph: tuple[
         tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
     ],
+    input_config: InputConfig,
     output_config: OutputConfig,
     anti_recommendation_node_query: SparqlQuery,
     anti_recommendation_key: AntiRecommendationKey,
 ) -> None:
-    """Test that wikipedia_arkg calls a method required to build an Anti-Recommendation Knowledge Graph."""
 
     wikipedia_arkg(
         AntiRecommendationGraphTuple(
             anti_recommendation_graphs=anti_recommendation_graph
         ),
+        input_config,
         output_config,
     )
 
     store = Store()
     store.load(
         input=output_config.parse().wikipedia_arkg_file_path,
-        mime_type="text/turtle",
+        mime_type=input_config.parse().mime_type,
     )
     anti_recommendation_node = next(store.query(anti_recommendation_node_query))
 

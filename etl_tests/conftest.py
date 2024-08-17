@@ -17,6 +17,7 @@ from etl.models.types import (
     ModelResponse,
     RecordKey,
     SparqlQuery,
+    MimeType,
 )
 
 from etl.pipelines import (
@@ -69,6 +70,7 @@ def input_config(
             data_file_names_default=data_file_names,
             distance_strategy_default=DistanceStrategy.COSINE,
             score_threshold_default=0.5,
+            mime_type_default=MimeType.TURTLE,
         )
     pytest.skip(reason="don't have input data files.")
 
