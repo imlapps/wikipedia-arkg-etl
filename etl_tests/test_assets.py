@@ -3,8 +3,9 @@ import json
 from langchain.docstore.document import Document
 from langchain.schema.runnable import RunnableSequence
 from langchain_community.vectorstores import FAISS
-from pytest_mock import MockFixture
 from pyoxigraph import Store
+from pytest_mock import MockFixture
+
 from etl.assets import (
     documents_of_wikipedia_articles_with_summaries,
     wikipedia_anti_recommendations,
@@ -17,19 +18,17 @@ from etl.assets import (
 )
 from etl.models import (
     AntiRecommendationGraphTuple,
+    ArkgInstance,
     DocumentTuple,
     RecordTuple,
     wikipedia,
-    ArkgInstance,
 )
-
 from etl.models.types import (
     AntiRecommendationKey,
     ModelResponse,
     RecordKey,
     SparqlQuery,
 )
-
 from etl.resources import (
     InputConfig,
     OpenaiPipelineConfig,
@@ -191,7 +190,7 @@ def test_wikipedia_arkg(
     anti_recommendation_node_query: SparqlQuery,
     anti_recommendation_key: AntiRecommendationKey,
 ) -> None:
-
+    """Test that wikipedia_arkg successfully materializes a Wikipedia ARKG and writes it to file."""
     wikipedia_arkg(
         AntiRecommendationGraphTuple(
             anti_recommendation_graphs=anti_recommendation_graph
@@ -205,7 +204,8 @@ def test_wikipedia_arkg(
         input=output_config.parse().wikipedia_arkg_file_path,
         mime_type=input_config.parse().mime_type,
     )
-    anti_recommendation_node = next(store.query(anti_recommendation_node_query))
+
+    anti_recommendation_node = next(store.query(anti_recommendation_node_query))  # type: ignore[arg-type]
 
     assert (
         anti_recommendation_node["anti_recommendation"].value

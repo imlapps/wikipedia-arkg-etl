@@ -1,8 +1,9 @@
 from typing import Annotated
+
 from pydantic import Field
 from pyoxigraph import Literal, NamedNode, Quad, Store
 
-from etl.models import WIKIPEDIA_BASE_URL, RDF_TYPE, ArkgInstance, ArkgSchema
+from etl.models import RDF_TYPE, WIKIPEDIA_BASE_URL, ArkgInstance, ArkgSchema
 from etl.models.types import AntiRecommendationKey, RecordKey
 
 
@@ -10,7 +11,7 @@ class ArkgBuilderPipeline:
     """
     A pipeline to build Anti-Recommendation Knowledge Graphs.
 
-    Constructs a RDF store from a tuple of anti-recommendation graphs.
+    Constructs a RDF Store from a tuple of anti-recommendation graphs.
     """
 
     def __init__(self) -> None:
@@ -21,11 +22,19 @@ class ArkgBuilderPipeline:
         self,
         *,
         anti_recommendation_keys: tuple[AntiRecommendationKey, ...],
-        wikipedia_page_url: Annotated[
+        item_reviewed: Annotated[
             str, Field(min_length=1, json_schema_extra={"strip_whitespace": True})
         ],
     ) -> None:
+        """
+        Add `anti-recommendation` Quads to the RDF Store.
 
+        `item_reviewed` is the IRI of the item that is being anti-recommended.
+
+        Each anti_recommendation_key has 2 Quad expressions in this method:
+        - a `type` Quad that expresses the type of Review the anti_recommendation_key belongs to.
+        - an `item-reviewed` Quad that relates the anti_recommendation_key to item that is being anti-recommended.
+        """
         for anti_recommendation_key in anti_recommendation_keys:
 
             anti_recommendation_instance = ArkgInstance.anti_recommendation_iri(
@@ -43,7 +52,7 @@ class ArkgBuilderPipeline:
                 Quad(
                     anti_recommendation_instance,
                     ArkgSchema.ITEMREVIEWED,
-                    NamedNode(wikipedia_page_url),
+                    NamedNode(item_reviewed),
                 )
             )
 
@@ -51,7 +60,16 @@ class ArkgBuilderPipeline:
         self,
         graphs: tuple[tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...],
     ) -> Store:
-        """Return a RDF Store populated with anti_recommendation_graphs."""
+        """
+        Return a RDF Store populated with anti_recommendation_graphs.
+
+        Each record_key in the anti_recommendation_graph has 3 Quad expressions in this method:
+        - a `type` Quad that expresses the type of CreativeWork the record_key belongs to.
+        - a `title` Quad that expresses the title of the record_key.
+        - a `url` Quad that expresses the URL of the record_key.
+
+        All anti-recommendations are related to a record_key via the __add_anti_recommendation_quads_to_store method.
+        """
 
         for graph in graphs:
             record_key = graph[0].replace(" ", "_")
@@ -82,7 +100,7 @@ class ArkgBuilderPipeline:
             )
 
             self.__add_anti_recommendation_quads_to_store(
-                anti_recommendation_keys=graph[1], wikipedia_page_url=wikipedia_page_url
+                anti_recommendation_keys=graph[1], item_reviewed=wikipedia_page_url
             )
 
         return self.__store

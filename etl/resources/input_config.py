@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from dagster import ConfigurableResource, EnvVar
 from langchain_community.vectorstores.utils import DistanceStrategy
+
 from etl.models.types import MimeType
 
 if TYPE_CHECKING:

@@ -14,12 +14,11 @@ from etl.models.types import (
     AntiRecommendationKey,
     DataFileName,
     EnrichmentType,
+    MimeType,
     ModelResponse,
     RecordKey,
     SparqlQuery,
-    MimeType,
 )
-
 from etl.pipelines import (
     AntiRecommendationRetrievalPipeline,
     OpenaiEmbeddingPipeline,
@@ -295,6 +294,7 @@ def anti_recommendation_graph(
 
 @pytest.fixture(scope="session")
 def anti_recommendation_node_query(record_key: RecordKey) -> SparqlQuery:
+    """Return a SPARQL query that fetches a record_key's anti-recommendation from an RDFStore."""
 
     return f"""
     PREFIX schema: <http://schema.org/>
