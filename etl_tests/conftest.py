@@ -9,12 +9,13 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain_openai import OpenAIEmbeddings
 
+from etl.namespaces import WD
 from etl.models import WIKIPEDIA_BASE_URL, AntiRecommendation, wikipedia
 from etl.models.types import (
     AntiRecommendationKey,
     DataFileName,
     EnrichmentType,
-    MimeType,
+    RdfMimeType,
     ModelResponse,
     RecordKey,
     SparqlQuery,
@@ -69,7 +70,7 @@ def input_config(
             data_file_names_default=data_file_names,
             distance_strategy_default=DistanceStrategy.COSINE,
             score_threshold_default=0.5,
-            mime_type_default=MimeType.TURTLE,
+            mime_type_default=RdfMimeType.TURTLE,
         )
     pytest.skip(reason="don't have input data files.")
 
@@ -235,7 +236,7 @@ def anti_recommendation_retrieval_pipeline(
 def anti_recommendation_key() -> AntiRecommendationKey:
     "Return a sample anti-recommendation key."
 
-    return "Sankoré Madrasah"
+    return "Sankoré_Madrasah"
 
 
 @pytest.fixture(scope="session")
@@ -293,12 +294,13 @@ def anti_recommendation_graph(
 
 
 @pytest.fixture(scope="session")
-def anti_recommendation_node_query(record_key: RecordKey) -> SparqlQuery:
+def anti_recommendation_node_query() -> SparqlQuery:
     """Return a SPARQL query that fetches a record_key's anti-recommendation from an RDFStore."""
+    mouseion_wd_identifier = "Q684645"
 
-    return f"""
+    return f"""\
     PREFIX schema: <http://schema.org/>
-    PREFIX wb: <https://en.wikipedia.org/wiki/>
+    PREFIX wd: <http://www.wikidata.org/entity/>
 
-    SELECT ?anti_recommendation WHERE {{?anti_recommendation schema:itemReviewed wb:{record_key}}}
+    SELECT ?anti_recommendation WHERE {{?anti_recommendation schema:itemReviewed wd:{mouseion_wd_identifier}}}
     """

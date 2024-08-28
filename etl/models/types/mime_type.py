@@ -1,8 +1,8 @@
 from enum import Enum
 
 
-class MimeType(str, Enum):
-    """An enum of MIME types for an ARKG serialization."""
+class RdfMimeType(str, Enum):
+    """An enum of RDF MIME types for an ARKG serialization."""
 
     N_TRIPLES = "application/n-triples"
     N_QUADS = "application/n-quads"

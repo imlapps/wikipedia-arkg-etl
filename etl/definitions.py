@@ -3,7 +3,7 @@ from pathlib import Path
 from dagster import Definitions, EnvVar, load_assets_from_modules
 from langchain_community.vectorstores.utils import DistanceStrategy
 
-from etl.models.types import EnrichmentType, MimeType
+from etl.models.types import EnrichmentType, RdfMimeType
 
 from . import assets
 from .jobs import embedding_job, retrieval_job
@@ -23,7 +23,7 @@ definitions = Definitions(
             data_file_names_default=("mini-wikipedia.output.txt",),
             distance_strategy_default=DistanceStrategy.EUCLIDEAN_DISTANCE,
             score_threshold_default=0.5,
-            mime_type_default=MimeType.TURTLE,
+            mime_type_default=RdfMimeType.TURTLE,
         ),
         "openai_settings": openai_settings,
         "openai_pipeline_config": OpenaiPipelineConfig(

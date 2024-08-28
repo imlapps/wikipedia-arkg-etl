@@ -3,8 +3,13 @@ from typing import Annotated
 from pydantic import Field
 from pyoxigraph import Literal, NamedNode, Quad, Store
 
-from etl.models import RDF_TYPE, WIKIPEDIA_BASE_URL, ArkgInstance, Schema
+from etl.namespaces import ARKG, RDF, SCHEMA
+from etl.models import WIKIPEDIA_BASE_URL, ArkgInstance
 from etl.models.types import AntiRecommendationKey, RecordKey
+
+from requests_cache import CachedSession
+
+from etl.namespaces.wd import WD
 
 
 class ArkgBuilderPipeline:
@@ -22,9 +27,7 @@ class ArkgBuilderPipeline:
         self,
         *,
         anti_recommendation_keys: tuple[AntiRecommendationKey, ...],
-        item_reviewed: Annotated[
-            str, Field(min_length=1, json_schema_extra={"strip_whitespace": True})
-        ],
+        item_reviewed: NamedNode,
     ) -> None:
         """
         Add `anti-recommendation` Quads to the RDF Store.
@@ -37,24 +40,35 @@ class ArkgBuilderPipeline:
         """
         for anti_recommendation_key in anti_recommendation_keys:
 
-            anti_recommendation_instance = ArkgInstance.anti_recommendation_iri(
-                record_key=anti_recommendation_key.replace(" ", "_")
+            anti_recommendation_iri = ArkgInstance.anti_recommendation_iri(
+                record_key=anti_recommendation_key
             )
 
             self.__store.add(
                 Quad(
-                    anti_recommendation_instance,
-                    RDF_TYPE,
-                    Schema.RECOMMENDATION,
+                    anti_recommendation_iri,
+                    RDF.TYPE,
+                    SCHEMA.RECOMMENDATION,
                 )
             )
             self.__store.add(
                 Quad(
-                    anti_recommendation_instance,
-                    Schema.ITEMREVIEWED,
-                    NamedNode(item_reviewed),
+                    anti_recommendation_iri,
+                    SCHEMA.ITEMREVIEWED,
+                    item_reviewed,
                 )
             )
+
+    def __get_wikidata_iri(self, record_key: RecordKey) -> NamedNode:
+        session = CachedSession("wikidata_entities", expire_after=3600)
+        response = session.get(
+            f"https://en.wikipedia.org/w/api.php?action=query&prop=pageprops&titles={record_key}&format=json"
+        )
+        wikidata_identifier = next(
+            iter(dict(response.json()["query"]["pages"]).values())
+        )["pageprops"]["wikibase_item"]
+
+        return NamedNode(WD.BASE_IRI.value + wikidata_identifier)
 
     def construct_graph(
         self,
@@ -72,35 +86,36 @@ class ArkgBuilderPipeline:
         """
 
         for graph in graphs:
-            record_key = graph[0].replace(" ", "_")
-            wikipedia_page_url = WIKIPEDIA_BASE_URL + record_key
+            record_key = graph[0]
+            wikidata_entity_iri = self.__get_wikidata_iri(record_key)
 
             self.__store.add(
                 Quad(
-                    NamedNode(wikipedia_page_url),
-                    RDF_TYPE,
-                    Schema.WEBPAGE,
+                    wikidata_entity_iri,
+                    RDF.TYPE,
+                    SCHEMA.WEBPAGE,
                 ),
             )
 
             self.__store.add(
                 Quad(
-                    NamedNode(wikipedia_page_url),
-                    Schema.TITLE,
+                    wikidata_entity_iri,
+                    SCHEMA.TITLE,
                     Literal(record_key),
                 )
             )
 
             self.__store.add(
                 Quad(
-                    NamedNode(wikipedia_page_url),
-                    Schema.URL,
-                    Literal(wikipedia_page_url),
+                    wikidata_entity_iri,
+                    SCHEMA.URL,
+                    Literal(wikidata_entity_iri.value),
                 )
             )
 
             self.__add_anti_recommendation_quads_to_store(
-                anti_recommendation_keys=graph[1], item_reviewed=wikipedia_page_url
+                anti_recommendation_keys=graph[1],
+                item_reviewed=wikidata_entity_iri,
             )
 
         return self.__store

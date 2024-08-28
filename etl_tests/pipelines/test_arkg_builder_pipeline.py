@@ -20,7 +20,5 @@ def test_construct_graph(
 
     assert (
         anti_recommendation_node["anti_recommendation"].value
-        == ArkgInstance.anti_recommendation_iri(
-            anti_recommendation_key.replace(" ", "_")
-        ).value
+        == ArkgInstance.anti_recommendation_iri(anti_recommendation_key).value
     )
