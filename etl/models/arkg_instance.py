@@ -1,6 +1,7 @@
 from pyoxigraph import NamedNode
 
 from .types import RecordKey
+from etl.namespaces import ARKG
 
 
 class ArkgInstance:
@@ -10,8 +11,5 @@ class ArkgInstance:
     def anti_recommendation_iri(record_key: RecordKey) -> NamedNode:
         """
         Return a NamedNode for an ARKG.
-        The base IRI for the NamedNode is `http://imlapps.github.io/anti-recommender/anti-recommendation/`
         """
-        return NamedNode(
-            f"http://imlapps.github.io/anti-recommender/anti-recommendation/{record_key}"
-        )
+        return NamedNode(ARKG.BASE_IRI.value + record_key)

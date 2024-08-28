@@ -28,9 +28,11 @@ class OpenaiRecordEnrichmentPipeline(RecordEnrichmentPipeline):
     def __create_question(self, record_key: RecordKey) -> ModelQuestion:
         """Return a question for an OpenAI model."""
 
+        record_key_with_spaces = record_key.replace("_", " ")
+
         match self.__openai_pipeline_config.enrichment_type:
             case EnrichmentType.SUMMARY:
-                return f"In 5 sentences, give a summary of {record_key} based on {record_key}'s Wikipedia entry."
+                return f"In 5 sentences, give a summary of {record_key_with_spaces} based on {record_key_with_spaces}'s Wikipedia entry."
             case _:
                 raise ValueError(
                     f"{self.__openai_pipeline_config.enrichment_type} is an invalid WikipediaTransform enrichment type."

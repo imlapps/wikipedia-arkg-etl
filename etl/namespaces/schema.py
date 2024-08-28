@@ -1,7 +1,7 @@
 from pyoxigraph import NamedNode
 
 
-class ArkgSchema:
+class SCHEMA:
     """A class that holds Schema.org predicates for an ARKG."""
 
     TITLE = NamedNode("http://schema.org/title")

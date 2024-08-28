@@ -4,8 +4,6 @@ from .anti_recommendation_graph_tuple import (
     AntiRecommendationGraphTuple as AntiRecommendationGraphTuple,
 )
 from .arkg_instance import ArkgInstance as ArkgInstance
-from .arkg_schema import ArkgSchema as ArkgSchema
-from .rdf_type import RDF_TYPE as RDF_TYPE
 from .record_tuple import RecordTuple as RecordTuple
 from .wikipedia_base_url import WIKIPEDIA_BASE_URL as WIKIPEDIA_BASE_URL
 

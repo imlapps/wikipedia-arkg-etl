@@ -3,7 +3,7 @@ from typing import Annotated
 from pydantic import Field
 from pyoxigraph import Literal, NamedNode, Quad, Store
 
-from etl.models import RDF_TYPE, WIKIPEDIA_BASE_URL, ArkgInstance, ArkgSchema
+from etl.models import RDF_TYPE, WIKIPEDIA_BASE_URL, ArkgInstance, Schema
 from etl.models.types import AntiRecommendationKey, RecordKey
 
 
@@ -45,13 +45,13 @@ class ArkgBuilderPipeline:
                 Quad(
                     anti_recommendation_instance,
                     RDF_TYPE,
-                    ArkgSchema.RECOMMENDATION,
+                    Schema.RECOMMENDATION,
                 )
             )
             self.__store.add(
                 Quad(
                     anti_recommendation_instance,
-                    ArkgSchema.ITEMREVIEWED,
+                    Schema.ITEMREVIEWED,
                     NamedNode(item_reviewed),
                 )
             )
@@ -79,14 +79,14 @@ class ArkgBuilderPipeline:
                 Quad(
                     NamedNode(wikipedia_page_url),
                     RDF_TYPE,
-                    ArkgSchema.WEBPAGE,
+                    Schema.WEBPAGE,
                 ),
             )
 
             self.__store.add(
                 Quad(
                     NamedNode(wikipedia_page_url),
-                    ArkgSchema.TITLE,
+                    Schema.TITLE,
                     Literal(record_key),
                 )
             )
@@ -94,7 +94,7 @@ class ArkgBuilderPipeline:
             self.__store.add(
                 Quad(
                     NamedNode(wikipedia_page_url),
-                    ArkgSchema.URL,
+                    Schema.URL,
                     Literal(wikipedia_page_url),
                 )
             )
