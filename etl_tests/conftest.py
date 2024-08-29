@@ -307,6 +307,7 @@ def anti_recommendation_graph(
     return ((record_key, (anti_recommendation_key,)),)
 
 
+@pytest.fixture(scope="session")
 def record_key_wikidata_identifier() -> RecordKey:
     """Return the Wikipedia identifier of the record_key `Mouseion`"""
 
