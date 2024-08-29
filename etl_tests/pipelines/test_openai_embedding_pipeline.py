@@ -4,14 +4,14 @@ from langchain_community.vectorstores import FAISS
 from pytest_mock import MockFixture
 
 from etl.pipelines import OpenaiEmbeddingPipeline
-from etl.resources import InputConfig
+from etl.resources import PipelineConfig
 
 
 def test_create_embedding_store(
     session_mocker: MockFixture,
     document_of_article_with_summary: Document,
     openai_embedding_pipeline: OpenaiEmbeddingPipeline,
-    input_config: InputConfig,
+    pipeline_config: PipelineConfig,
 ) -> None:
     """Test that OpenaiEmbeddingPipeline.create_embedding_store invokes a method that is required to create an embedding store."""
 
@@ -20,12 +20,10 @@ def test_create_embedding_store(
         FAISS, "from_documents", return_value=None
     )
 
-    parsed_input_config = input_config.parse()
-
     openai_embedding_pipeline.create_embedding_store(
         documents=(document_of_article_with_summary,),
-        distance_strategy=parsed_input_config.distance_strategy,
-        score_threshold=parsed_input_config.score_threshold,
+        distance_strategy=pipeline_config.distance_strategy,
+        score_threshold=pipeline_config.score_threshold,
     )
 
     mock_faiss__from_documents.assert_called_once()

@@ -1,15 +1,16 @@
 from pyoxigraph import NamedNode
 
-from .types import RecordKey
 from etl.namespaces import ARKG
+
+from .types import RecordKey
 
 
 class ArkgInstance:
-    """A class to create ARKG Instances."""
+    """A class to create ARKG IRIs."""
 
     @staticmethod
     def anti_recommendation_iri(record_key: RecordKey) -> NamedNode:
         """
-        Return a NamedNode for an ARKG.
+        Return an AntiRecommendation NamedNode for an ARKG.
         """
         return NamedNode(ARKG.BASE_IRI.value + record_key)

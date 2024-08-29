@@ -1,6 +1,6 @@
 from langchain_community.vectorstores import VectorStore
 
-from etl.models import AntiRecommendation, WIKIPEDIA_BASE_URL
+from etl.models import WIKIPEDIA_BASE_URL, AntiRecommendation
 from etl.models.types import DocumentsLimit, ModelQuestion, RecordKey
 from etl.pipelines import RetrievalPipeline
 

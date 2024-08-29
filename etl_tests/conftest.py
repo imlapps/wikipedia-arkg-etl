@@ -9,14 +9,13 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain_openai import OpenAIEmbeddings
 
-from etl.namespaces import WD
 from etl.models import WIKIPEDIA_BASE_URL, AntiRecommendation, wikipedia
 from etl.models.types import (
     AntiRecommendationKey,
     DataFileName,
     EnrichmentType,
-    RdfMimeType,
     ModelResponse,
+    RdfMimeType,
     RecordKey,
     SparqlQuery,
 )
@@ -25,13 +24,10 @@ from etl.pipelines import (
     OpenaiEmbeddingPipeline,
     OpenaiRecordEnrichmentPipeline,
 )
+from etl.pipelines.arkg_builder_pipeline import ArkgBuilderPipeline
 from etl.readers import WikipediaReader
-from etl.resources import (
-    InputConfig,
-    OpenaiPipelineConfig,
-    OpenaiSettings,
-    OutputConfig,
-)
+from etl.resources import InputConfig, OpenaiSettings, OutputConfig, PipelineConfig
+from etl.resources.arkg_config import ArkgConfig
 
 
 @pytest.fixture(scope="session")
@@ -68,9 +64,6 @@ def input_config(
         return InputConfig.default(
             data_files_directory_path_default=input_data_files_directory_path,
             data_file_names_default=data_file_names,
-            distance_strategy_default=DistanceStrategy.COSINE,
-            score_threshold_default=0.5,
-            mime_type_default=RdfMimeType.TURTLE,
         )
     pytest.skip(reason="don't have input data files.")
 
@@ -88,9 +81,14 @@ def output_config() -> OutputConfig:
 
 
 @pytest.fixture(scope="session")
-def wikipedia_reader(
-    input_config: InputConfig,
-) -> WikipediaReader:
+def arkg_config() -> ArkgConfig:
+    """Return an ArkgConfig object."""
+
+    return ArkgConfig(rdf_mime_type=RdfMimeType.TURTLE)
+
+
+@pytest.fixture(scope="session")
+def wikipedia_reader(input_config: InputConfig) -> WikipediaReader:
     """Return a WikipediaReaderobject."""
 
     return WikipediaReader(data_file_paths=input_config.parse().data_file_paths)
@@ -117,25 +115,27 @@ def enrichment_type() -> EnrichmentType:
 
 
 @pytest.fixture(scope="session")
-def openai_pipeline_config(
+def pipeline_config(
     openai_settings: OpenaiSettings,
     enrichment_type: EnrichmentType,
-) -> OpenaiPipelineConfig:
-    """Return an OpenaiPipelineConfig object."""
+) -> PipelineConfig:
+    """Return a PipelineConfig object."""
 
-    return OpenaiPipelineConfig(
+    return PipelineConfig(
         openai_settings=openai_settings,
         enrichment_type=enrichment_type,
+        distance_strategy=DistanceStrategy.COSINE,
+        score_threshold=0.5,
     )
 
 
 @pytest.fixture(scope="session")
 def openai_record_enrichment_pipeline(
-    openai_pipeline_config: OpenaiPipelineConfig,
+    pipeline_config: PipelineConfig,
 ) -> OpenaiRecordEnrichmentPipeline:
     """Return an OpenaiRecordEnrichmentPipeline object."""
 
-    return OpenaiRecordEnrichmentPipeline(openai_pipeline_config=openai_pipeline_config)
+    return OpenaiRecordEnrichmentPipeline(pipeline_config=pipeline_config)
 
 
 @pytest.fixture(scope="session")
@@ -233,6 +233,15 @@ def anti_recommendation_retrieval_pipeline(
 
 
 @pytest.fixture(scope="session")
+def arkg_builder_pipeline(output_config: OutputConfig) -> ArkgBuilderPipeline:
+    """Return an ArkgBuilderPipeline object."""
+
+    return ArkgBuilderPipeline(
+        requests_cache_directory=output_config.parse().requests_cache_directory_path
+    )
+
+
+@pytest.fixture(scope="session")
 def anti_recommendation_key() -> AntiRecommendationKey:
     "Return a sample anti-recommendation key."
 
@@ -296,6 +305,7 @@ def anti_recommendation_graph(
 @pytest.fixture(scope="session")
 def anti_recommendation_node_query() -> SparqlQuery:
     """Return a SPARQL query that fetches a record_key's anti-recommendation from an RDFStore."""
+
     mouseion_wd_identifier = "Q684645"
 
     return f"""\

@@ -1,14 +1,11 @@
-from typing import Annotated
+from pathlib import Path
 
-from pydantic import Field
 from pyoxigraph import Literal, NamedNode, Quad, Store
-
-from etl.namespaces import ARKG, RDF, SCHEMA
-from etl.models import WIKIPEDIA_BASE_URL, ArkgInstance
-from etl.models.types import AntiRecommendationKey, RecordKey
-
 from requests_cache import CachedSession
 
+from etl.models import ArkgInstance
+from etl.models.types import AntiRecommendationKey, RecordKey
+from etl.namespaces import RDF, SCHEMA
 from etl.namespaces.wd import WD
 
 
@@ -19,8 +16,8 @@ class ArkgBuilderPipeline:
     Constructs a RDF Store from a tuple of anti-recommendation graphs.
     """
 
-    def __init__(self) -> None:
-
+    def __init__(self, requests_cache_directory: Path) -> None:
+        self.__requests_cache_directory = requests_cache_directory
         self.__store = Store()
 
     def __add_anti_recommendation_quads_to_store(
@@ -60,10 +57,19 @@ class ArkgBuilderPipeline:
             )
 
     def __get_wikidata_iri(self, record_key: RecordKey) -> NamedNode:
-        session = CachedSession("wikidata_entities", expire_after=3600)
+        """Return an RDF node that contains the Wikidata IRI of record_key."""
+
+        self.__requests_cache_directory.mkdir(exist_ok=True)
+
+        session = CachedSession(
+            cache_name=self.__requests_cache_directory / "wikidata_identifiers",
+            expire_after=3600,
+        )
+
         response = session.get(
             f"https://en.wikipedia.org/w/api.php?action=query&prop=pageprops&titles={record_key}&format=json"
         )
+
         wikidata_identifier = next(
             iter(dict(response.json()["query"]["pages"]).values())
         )["pageprops"]["wikibase_item"]
@@ -87,11 +93,11 @@ class ArkgBuilderPipeline:
 
         for graph in graphs:
             record_key = graph[0]
-            wikidata_entity_iri = self.__get_wikidata_iri(record_key)
+            record_key_wikidata_iri = self.__get_wikidata_iri(record_key)
 
             self.__store.add(
                 Quad(
-                    wikidata_entity_iri,
+                    record_key_wikidata_iri,
                     RDF.TYPE,
                     SCHEMA.WEBPAGE,
                 ),
@@ -99,7 +105,7 @@ class ArkgBuilderPipeline:
 
             self.__store.add(
                 Quad(
-                    wikidata_entity_iri,
+                    record_key_wikidata_iri,
                     SCHEMA.TITLE,
                     Literal(record_key),
                 )
@@ -107,15 +113,15 @@ class ArkgBuilderPipeline:
 
             self.__store.add(
                 Quad(
-                    wikidata_entity_iri,
+                    record_key_wikidata_iri,
                     SCHEMA.URL,
-                    Literal(wikidata_entity_iri.value),
+                    Literal(record_key_wikidata_iri.value),
                 )
             )
 
             self.__add_anti_recommendation_quads_to_store(
                 anti_recommendation_keys=graph[1],
-                item_reviewed=wikidata_entity_iri,
+                item_reviewed=record_key_wikidata_iri,
             )
 
         return self.__store

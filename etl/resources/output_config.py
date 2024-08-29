@@ -44,6 +44,12 @@ class OutputConfig(ConfigurableResource):  # type: ignore[misc]
             return self.output_directory_path / "anti_recommendations"
 
         @property
+        def requests_cache_directory_path(self) -> Path:
+            """The Path of the directory that contains caches of HTTP requests."""
+
+            return self.output_directory_path / "requests_cache"
+
+        @property
         def wikipedia_articles_with_summaries_file_path(self) -> Path:
             """The Path of the file that contains Wikipedia articles with summaries."""
 
@@ -80,7 +86,7 @@ class OutputConfig(ConfigurableResource):  # type: ignore[misc]
         """Return an OutputConfig object, with an output directory path obtained from environment variables."""
 
         return cls(
-            output_directory_path=EnvVar("OUTPUT_DIRECTORY_PATH").get_value(
+            output_directory_path=EnvVar("ETL_OUTPUT_DIRECTORY_PATH").get_value(
                 str(output_directory_path_default)
             ),
         )

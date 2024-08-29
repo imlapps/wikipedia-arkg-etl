@@ -10,12 +10,8 @@ from etl.pipelines import (
     OpenaiRecordEnrichmentPipeline,
 )
 from etl.readers import WikipediaReader
-from etl.resources import (
-    InputConfig,
-    OpenaiPipelineConfig,
-    OpenaiSettings,
-    OutputConfig,
-)
+from etl.resources import InputConfig, OutputConfig, PipelineConfig
+from etl.resources.arkg_config import ArkgConfig
 
 
 @asset
@@ -34,13 +30,13 @@ def wikipedia_articles_from_storage(
 @asset
 def wikipedia_articles_with_summaries(
     wikipedia_articles_from_storage: RecordTuple,
-    openai_pipeline_config: OpenaiPipelineConfig,
+    pipeline_config: PipelineConfig,
 ) -> RecordTuple:
     """Materialize an asset of Wikipedia articles with summaries."""
 
     return RecordTuple(
         records=tuple(
-            OpenaiRecordEnrichmentPipeline(openai_pipeline_config).enrich_record(
+            OpenaiRecordEnrichmentPipeline(pipeline_config).enrich_record(
                 wikipedia_article
             )
             for wikipedia_article in wikipedia_articles_from_storage.records
@@ -83,21 +79,18 @@ def documents_of_wikipedia_articles_with_summaries(
 @asset
 def wikipedia_articles_embedding_store(
     documents_of_wikipedia_articles_with_summaries: DocumentTuple,
-    openai_settings: OpenaiSettings,
-    input_config: InputConfig,
+    pipeline_config: PipelineConfig,
     output_config: OutputConfig,
 ) -> None:
     """Materialize an asset of Wikipedia articles embeddings."""
 
-    parsed_input_config = input_config.parse()
-
     OpenaiEmbeddingPipeline(
-        openai_settings=openai_settings,
+        openai_settings=pipeline_config.openai_settings,
         output_config=output_config,
     ).create_embedding_store(
         documents=documents_of_wikipedia_articles_with_summaries.documents,
-        distance_strategy=parsed_input_config.distance_strategy,
-        score_threshold=parsed_input_config.score_threshold,
+        distance_strategy=pipeline_config.distance_strategy,
+        score_threshold=pipeline_config.score_threshold,
     )
 
 
@@ -105,21 +98,18 @@ def wikipedia_articles_embedding_store(
 def wikipedia_anti_recommendations(
     wikipedia_articles_from_storage: RecordTuple,
     documents_of_wikipedia_articles_with_summaries: DocumentTuple,
-    openai_settings: OpenaiSettings,
-    input_config: InputConfig,
+    pipeline_config: PipelineConfig,
     output_config: OutputConfig,
 ) -> AntiRecommendationGraphTuple:
     """Materialize an asset of Wikipedia anti-recommendations."""
 
-    parsed_input_config = input_config.parse()
-
     wikipedia_anti_recommendations_embedding_store = OpenaiEmbeddingPipeline(
-        openai_settings=openai_settings,
+        openai_settings=pipeline_config.openai_settings,
         output_config=output_config,
     ).create_embedding_store(
         documents=documents_of_wikipedia_articles_with_summaries.documents,
-        distance_strategy=parsed_input_config.distance_strategy,
-        score_threshold=parsed_input_config.score_threshold,
+        distance_strategy=pipeline_config.distance_strategy,
+        score_threshold=pipeline_config.score_threshold,
     )
 
     return AntiRecommendationGraphTuple(
@@ -162,14 +152,14 @@ def wikipedia_anti_recommendations_json_file(
 @asset
 def wikipedia_arkg(
     wikipedia_anti_recommendations: AntiRecommendationGraphTuple,
-    input_config: InputConfig,
+    arkg_config: ArkgConfig,
     output_config: OutputConfig,
 ) -> None:
     """Materialize a Wikipedia Anti-Recommendation Knowledge Graph asset."""
 
-    ArkgBuilderPipeline().construct_graph(
-        wikipedia_anti_recommendations.anti_recommendation_graphs
-    ).dump(
+    ArkgBuilderPipeline(
+        requests_cache_directory=output_config.parse().requests_cache_directory_path
+    ).construct_graph(wikipedia_anti_recommendations.anti_recommendation_graphs).dump(
         output=output_config.parse().wikipedia_arkg_file_path,
-        mime_type=input_config.parse().mime_type,
+        mime_type=arkg_config.rdf_mime_type,
     )

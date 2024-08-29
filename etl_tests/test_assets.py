@@ -29,17 +29,11 @@ from etl.models.types import (
     RecordKey,
     SparqlQuery,
 )
-from etl.resources import (
-    InputConfig,
-    OpenaiPipelineConfig,
-    OpenaiSettings,
-    OutputConfig,
-)
+from etl.resources import InputConfig, OpenaiSettings, OutputConfig, PipelineConfig
+from etl.resources.arkg_config import ArkgConfig
 
 
-def test_wikipedia_articles_from_storage(
-    input_config: InputConfig,
-) -> None:
+def test_wikipedia_articles_from_storage(input_config: InputConfig) -> None:
     """Test that wikipedia_articles_from_storage successfully materializes a tuple of Wikipedia articles."""
 
     assert isinstance(
@@ -49,7 +43,7 @@ def test_wikipedia_articles_from_storage(
 
 def test_wikipedia_articles_with_summaries(
     session_mocker: MockFixture,
-    openai_pipeline_config: OpenaiPipelineConfig,
+    pipeline_config: PipelineConfig,
     tuple_of_articles_with_summaries: tuple[wikipedia.Article, ...],
     article_with_summary: wikipedia.Article,
     openai_model_response: ModelResponse,
@@ -64,7 +58,7 @@ def test_wikipedia_articles_with_summaries(
     assert (
         wikipedia_articles_with_summaries(  # type: ignore[attr-defined]
             RecordTuple(records=tuple_of_articles_with_summaries),
-            openai_pipeline_config,
+            pipeline_config,
         )
         .records[0]
         .model_dump(by_alias=True)["summary"]
@@ -108,10 +102,9 @@ def test_documents_of_wikipedia_articles_with_summaries(
     )
 
 
-def test_wikipedia_articles_embeddings(  # noqa: PLR0913
+def test_wikipedia_articles_embeddings(
     session_mocker: MockFixture,
-    openai_settings: OpenaiSettings,
-    input_config: InputConfig,
+    pipeline_config: PipelineConfig,
     output_config: OutputConfig,
     faiss: FAISS,
     document_of_article_with_summary: Document,
@@ -124,17 +117,15 @@ def test_wikipedia_articles_embeddings(  # noqa: PLR0913
 
     wikipedia_articles_embedding_store(
         DocumentTuple(documents=(document_of_article_with_summary,)),
-        openai_settings,
-        input_config,
+        pipeline_config,
         output_config,
     )
 
     mock_faiss__from_documents.assert_called_once()
 
 
-def test_wikipedia_anti_recommendations(  # noqa: PLR0913
-    openai_settings: OpenaiSettings,
-    input_config: InputConfig,
+def test_wikipedia_anti_recommendations(
+    pipeline_config: PipelineConfig,
     output_config: OutputConfig,
     document_of_article_with_summary: Document,
     article: wikipedia.Article,
@@ -148,8 +139,7 @@ def test_wikipedia_anti_recommendations(  # noqa: PLR0913
         wikipedia_anti_recommendations(  # type: ignore[attr-defined]
             RecordTuple(records=(article,)),
             DocumentTuple(documents=(document_of_article_with_summary,)),
-            openai_settings,
-            input_config,
+            pipeline_config,
             output_config,
         ).anti_recommendation_graphs[0]
         == anti_recommendation_graph[0]
@@ -185,7 +175,7 @@ def test_wikipedia_arkg(
     anti_recommendation_graph: tuple[
         tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
     ],
-    input_config: InputConfig,
+    arkg_config: ArkgConfig,
     output_config: OutputConfig,
     anti_recommendation_node_query: SparqlQuery,
     anti_recommendation_key: AntiRecommendationKey,
@@ -195,14 +185,14 @@ def test_wikipedia_arkg(
         AntiRecommendationGraphTuple(
             anti_recommendation_graphs=anti_recommendation_graph
         ),
-        input_config,
+        arkg_config,
         output_config,
     )
 
     store = Store()
     store.load(
         input=output_config.parse().wikipedia_arkg_file_path,
-        mime_type=input_config.parse().mime_type,
+        mime_type=arkg_config.rdf_mime_type,
     )
 
     anti_recommendation_node = next(store.query(anti_recommendation_node_query))  # type: ignore[arg-type]

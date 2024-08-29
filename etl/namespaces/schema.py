@@ -2,7 +2,7 @@ from pyoxigraph import NamedNode
 
 
 class SCHEMA:
-    """A class that holds Schema.org predicates for an ARKG."""
+    """A class containing Schema.org RDF Nodes."""
 
     TITLE = NamedNode("http://schema.org/title")
     URL = NamedNode("http://schema.org/url")
