@@ -10,8 +10,7 @@ from etl.pipelines import (
     OpenaiRecordEnrichmentPipeline,
 )
 from etl.readers import WikipediaReader
-from etl.resources import InputConfig, OutputConfig, PipelineConfig
-from etl.resources.arkg_config import ArkgConfig
+from etl.resources import ArkgConfig, InputConfig, OutputConfig, PipelineConfig
 
 
 @asset

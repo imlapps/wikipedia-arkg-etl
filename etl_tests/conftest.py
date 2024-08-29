@@ -21,13 +21,18 @@ from etl.models.types import (
 )
 from etl.pipelines import (
     AntiRecommendationRetrievalPipeline,
+    ArkgBuilderPipeline,
     OpenaiEmbeddingPipeline,
     OpenaiRecordEnrichmentPipeline,
 )
-from etl.pipelines.arkg_builder_pipeline import ArkgBuilderPipeline
 from etl.readers import WikipediaReader
-from etl.resources import InputConfig, OpenaiSettings, OutputConfig, PipelineConfig
-from etl.resources.arkg_config import ArkgConfig
+from etl.resources import (
+    ArkgConfig,
+    InputConfig,
+    OpenaiSettings,
+    OutputConfig,
+    PipelineConfig,
+)
 
 
 @pytest.fixture(scope="session")

@@ -1,10 +1,14 @@
-from collections.abc import Callable
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Self
+from typing import TYPE_CHECKING
 
 from langchain.docstore.document import Document
 
 from etl.models import WIKIPEDIA_BASE_URL, Record
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 @dataclass(frozen=True)
@@ -16,7 +20,7 @@ class DocumentTuple:
     @classmethod
     def from_records(
         cls, *, records: tuple[Record, ...], record_content: Callable[[Record], str]
-    ) -> Self:
+    ) -> DocumentTuple:
         """
         Convert Records into Documents and return an instance of DocumentTuple.
 

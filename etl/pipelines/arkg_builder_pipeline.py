@@ -3,10 +3,8 @@ from pathlib import Path
 from pyoxigraph import Literal, NamedNode, Quad, Store
 from requests_cache import CachedSession
 
-from etl.models import ArkgInstance
 from etl.models.types import AntiRecommendationKey, RecordKey
-from etl.namespaces import RDF, SCHEMA
-from etl.namespaces.wd import WD
+from etl.namespaces import ARKG, RDF, SCHEMA, WD
 
 
 class ArkgBuilderPipeline:
@@ -37,7 +35,7 @@ class ArkgBuilderPipeline:
         """
         for anti_recommendation_key in anti_recommendation_keys:
 
-            anti_recommendation_iri = ArkgInstance.anti_recommendation_iri(
+            anti_recommendation_iri = ARKG.anti_recommendation_iri(
                 record_key=anti_recommendation_key
             )
 

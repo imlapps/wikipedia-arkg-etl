@@ -18,7 +18,6 @@ from etl.assets import (
 )
 from etl.models import (
     AntiRecommendationGraphTuple,
-    ArkgInstance,
     DocumentTuple,
     RecordTuple,
     wikipedia,
@@ -29,8 +28,14 @@ from etl.models.types import (
     RecordKey,
     SparqlQuery,
 )
-from etl.resources import InputConfig, OpenaiSettings, OutputConfig, PipelineConfig
-from etl.resources.arkg_config import ArkgConfig
+from etl.namespaces import ARKG
+from etl.resources import (
+    ArkgConfig,
+    InputConfig,
+    OpenaiSettings,
+    OutputConfig,
+    PipelineConfig,
+)
 
 
 def test_wikipedia_articles_from_storage(input_config: InputConfig) -> None:
@@ -199,5 +204,5 @@ def test_wikipedia_arkg(
 
     assert (
         anti_recommendation_node["anti_recommendation"].value
-        == ArkgInstance.anti_recommendation_iri(anti_recommendation_key).value
+        == ARKG.anti_recommendation_iri(anti_recommendation_key).value
     )

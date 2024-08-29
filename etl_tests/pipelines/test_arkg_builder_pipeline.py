@@ -1,5 +1,5 @@
-from etl.models import ArkgInstance
 from etl.models.types import AntiRecommendationKey, RecordKey, SparqlQuery
+from etl.namespaces import ARKG
 from etl.pipelines import ArkgBuilderPipeline
 
 
@@ -21,5 +21,5 @@ def test_construct_graph(
 
     assert (
         anti_recommendation_node["anti_recommendation"].value
-        == ArkgInstance.anti_recommendation_iri(anti_recommendation_key).value
+        == ARKG.anti_recommendation_iri(anti_recommendation_key).value
     )
