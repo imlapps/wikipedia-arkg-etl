@@ -57,7 +57,7 @@ class ArkgBuilderPipeline:
     def __get_wikidata_iri(self, record_key: RecordKey) -> NamedNode:
         """Return a RDF node that contains the Wikidata IRI of record_key."""
 
-        self.__requests_cache_directory.mkdir(exist_ok=True)
+        self.__requests_cache_directory.mkdir(parents=True, exist_ok=True)
 
         session = CachedSession(
             cache_name=self.__requests_cache_directory / "wikidata_identifiers",
