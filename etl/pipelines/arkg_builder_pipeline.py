@@ -31,7 +31,7 @@ class ArkgBuilderPipeline:
 
         Each anti_recommendation_key has 2 Quad expressions in this method:
         - a `type` Quad that expresses the type of Review the anti_recommendation_key belongs to.
-        - an `item-reviewed` Quad that relates the anti_recommendation_key to item that is being anti-recommended.
+        - an `item-reviewed` Quad that relates the anti_recommendation_key to the item that is being anti-recommended.
         """
         for anti_recommendation_key in anti_recommendation_keys:
 
@@ -55,7 +55,7 @@ class ArkgBuilderPipeline:
             )
 
     def __get_wikidata_iri(self, record_key: RecordKey) -> NamedNode:
-        """Return an RDF node that contains the Wikidata IRI of record_key."""
+        """Return a RDF node that contains the Wikidata IRI of record_key."""
 
         self.__requests_cache_directory.mkdir(exist_ok=True)
 

@@ -4,6 +4,6 @@ from etl.models.types import RdfMimeType
 
 
 class ArkgConfig(ConfigurableResource):  # type: ignore[misc]
-    """A ConfigurableResource that contains values related to an ARKG."""
+    """A ConfigurableResource that contains values used by an ARKG."""
 
     rdf_mime_type: RdfMimeType

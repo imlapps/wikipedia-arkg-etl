@@ -45,7 +45,7 @@ class OutputConfig(ConfigurableResource):  # type: ignore[misc]
 
         @property
         def requests_cache_directory_path(self) -> Path:
-            """The Path of the directory that contains caches of HTTP requests."""
+            """The Path of the directory for HTTP request caches."""
 
             return self.output_directory_path / "requests_cache"
 

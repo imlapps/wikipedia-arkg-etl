@@ -6,7 +6,7 @@ from etl.resources import OpenaiSettings
 
 
 class PipelineConfig(ConfigurableResource):  # type: ignore[misc]
-    """A ConfigurableResource that holds the shared parameters of Pipelines."""
+    """A ConfigurableResource that holds the shared parameters of pipelines."""
 
     openai_settings: OpenaiSettings
     enrichment_type: EnrichmentType

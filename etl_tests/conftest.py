@@ -307,15 +307,21 @@ def anti_recommendation_graph(
     return ((record_key, (anti_recommendation_key,)),)
 
 
-@pytest.fixture(scope="session")
-def anti_recommendation_node_query() -> SparqlQuery:
-    """Return a SPARQL query that fetches a record_key's anti-recommendation from an RDFStore."""
+def record_key_wikidata_identifier() -> RecordKey:
+    """Return the Wikipedia identifier of the record_key `Mouseion`"""
 
-    mouseion_wd_identifier = "Q684645"
+    return "Q684645"
+
+
+@pytest.fixture(scope="session")
+def anti_recommendation_node_query(
+    record_key_wikidata_identifier: RecordKey,
+) -> SparqlQuery:
+    """Return a SPARQL query that fetches a record_key's anti-recommendation from an RDFStore."""
 
     return f"""\
     PREFIX schema: <http://schema.org/>
     PREFIX wd: <http://www.wikidata.org/entity/>
 
-    SELECT ?anti_recommendation WHERE {{?anti_recommendation schema:itemReviewed wd:{mouseion_wd_identifier}}}
+    SELECT ?anti_recommendation WHERE {{?anti_recommendation schema:itemReviewed wd:{record_key_wikidata_identifier}}}
     """
