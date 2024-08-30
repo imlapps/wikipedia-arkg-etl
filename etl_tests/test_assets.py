@@ -34,7 +34,7 @@ from etl.resources import (
     InputConfig,
     OpenaiSettings,
     OutputConfig,
-    RetrievalPipelineConfig,
+    RetrievalAlgorithmSettings,
 )
 
 
@@ -137,6 +137,7 @@ def test_wikipedia_anti_recommendations(
     anti_recommendation_graph: tuple[
         tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
     ],
+    retrieval_algorithm_settings: RetrievalAlgorithmSettings,
 ) -> None:
     """Test that wikipedia_anti_recommendations successfully returns anti_recommendation_graphs."""
 
@@ -146,6 +147,7 @@ def test_wikipedia_anti_recommendations(
             DocumentTuple(documents=(document_of_article_with_summary,)),
             openai_settings,
             output_config,
+            retrieval_algorithm_settings,
         ).anti_recommendation_graphs[0]
         == anti_recommendation_graph[0]
     )

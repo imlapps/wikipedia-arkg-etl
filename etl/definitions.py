@@ -8,7 +8,12 @@ from etl.resources.input_config import InputConfig
 
 from . import assets
 from .jobs import embedding_job, retrieval_job
-from .resources import ArkgConfig, OpenaiSettings, OutputConfig, RetrievalPipelineConfig
+from .resources import (
+    ArkgConfig,
+    OpenaiSettings,
+    OutputConfig,
+    RetrievalAlgorithmSettings,
+)
 
 
 definitions = Definitions(
@@ -35,7 +40,7 @@ definitions = Definitions(
             / "data"
             / "output"
         ),
-        "retrieval_pipeline_config": RetrievalPipelineConfig(
+        "retrieval_algorithm_settings": RetrievalAlgorithmSettings(
             distance_strategy=EnvVar("ETL_DISTANCE_STRATEGY").get_value(
                 default=DistanceStrategy.EUCLIDEAN_DISTANCE
             ),

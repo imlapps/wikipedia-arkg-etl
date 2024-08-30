@@ -10,7 +10,12 @@ from etl.pipelines import (
     OpenaiRecordEnrichmentPipeline,
 )
 from etl.readers import WikipediaReader
-from etl.resources import ArkgConfig, InputConfig, OutputConfig, RetrievalPipelineConfig
+from etl.resources import (
+    ArkgConfig,
+    InputConfig,
+    OutputConfig,
+    RetrievalAlgorithmSettings,
+)
 from etl.resources.openai_settings import OpenaiSettings
 
 
@@ -29,14 +34,13 @@ def wikipedia_articles_from_storage(
 
 @asset
 def wikipedia_articles_with_summaries(
-    wikipedia_articles_from_storage: RecordTuple,
-    retrieval_pipeline_config: RetrievalPipelineConfig,
+    wikipedia_articles_from_storage: RecordTuple, openai_settings: OpenaiSettings
 ) -> RecordTuple:
     """Materialize an asset of Wikipedia articles with summaries."""
 
     return RecordTuple(
         records=tuple(
-            OpenaiRecordEnrichmentPipeline(retrieval_pipeline_config).enrich_record(
+            OpenaiRecordEnrichmentPipeline(openai_settings).enrich_record(
                 wikipedia_article
             )
             for wikipedia_article in wikipedia_articles_from_storage.records
@@ -98,6 +102,7 @@ def wikipedia_anti_recommendations(
     documents_of_wikipedia_articles_with_summaries: DocumentTuple,
     openai_settings: OpenaiSettings,
     output_config: OutputConfig,
+    retrieval_algorithm_settings: RetrievalAlgorithmSettings,
 ) -> AntiRecommendationGraphTuple:
     """Materialize an asset of Wikipedia anti-recommendations."""
 
@@ -115,7 +120,8 @@ def wikipedia_anti_recommendations(
                 tuple(
                     anti_recommendation.key
                     for anti_recommendation in AntiRecommendationRetrievalPipeline(
-                        wikipedia_anti_recommendations_embedding_store
+                        vector_store=wikipedia_anti_recommendations_embedding_store,
+                        retrieval_algorithm_settings=retrieval_algorithm_settings,
                     ).retrieve_documents(record_key=record.key, k=7)
                     if anti_recommendation.key != record.key
                 ),

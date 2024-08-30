@@ -30,7 +30,7 @@ from etl.resources import (
     InputConfig,
     OpenaiSettings,
     OutputConfig,
-    RetrievalPipelineConfig,
+    RetrievalAlgorithmSettings,
 )
 
 
@@ -112,10 +112,10 @@ def openai_settings() -> OpenaiSettings:
 
 
 @pytest.fixture(scope="session")
-def retrieval_pipeline_config() -> RetrievalPipelineConfig:
-    """Return a RetrievalPipelineConfig object."""
+def retrieval_algorithm_settings() -> RetrievalAlgorithmSettings:
+    """Return a RetrievalAlgorithmSettings object."""
 
-    return RetrievalPipelineConfig(
+    return RetrievalAlgorithmSettings(
         distance_strategy=DistanceStrategy.COSINE,
         score_threshold=0.5,
     )
@@ -217,11 +217,13 @@ def faiss(openai_settings: OpenaiSettings) -> FAISS:  # noqa: ARG001
 
 @pytest.fixture(scope="session")
 def anti_recommendation_retrieval_pipeline(
-    faiss: FAISS,
+    faiss: FAISS, retrieval_algorithm_settings: RetrievalAlgorithmSettings
 ) -> AntiRecommendationRetrievalPipeline:
     """Return an AntiRecommendationRetrievalPipeline object."""
 
-    return AntiRecommendationRetrievalPipeline(faiss)
+    return AntiRecommendationRetrievalPipeline(
+        vector_store=faiss, retrieval_algorithm_settings=retrieval_algorithm_settings
+    )
 
 
 @pytest.fixture(scope="session")

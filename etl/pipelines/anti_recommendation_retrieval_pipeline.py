@@ -3,6 +3,7 @@ from langchain_community.vectorstores import VectorStore
 from etl.models import WIKIPEDIA_BASE_URL, AntiRecommendation
 from etl.models.types import DocumentsLimit, ModelQuestion, RecordKey
 from etl.pipelines import RetrievalPipeline
+from etl.resources import RetrievalAlgorithmSettings
 
 
 class AntiRecommendationRetrievalPipeline(RetrievalPipeline):
@@ -12,8 +13,14 @@ class AntiRecommendationRetrievalPipeline(RetrievalPipeline):
     Retrieves anti-recommendations of a Record key using Documents stored in a VectorStore.
     """
 
-    def __init__(self, vector_store: VectorStore) -> None:
+    def __init__(
+        self,
+        *,
+        vector_store: VectorStore,
+        retrieval_algorithm_settings: RetrievalAlgorithmSettings,
+    ) -> None:
         self.__vector_store = vector_store
+        self.__retrieval_algorithm_settings = retrieval_algorithm_settings
 
     def __create_query(
         self,
@@ -51,5 +58,7 @@ class AntiRecommendationRetrievalPipeline(RetrievalPipeline):
                     k=k,
                 ),
                 k=k,
+                distance_strategy=self.__retrieval_algorithm_settings.distance_strategy,
+                score_threshold=self.__retrieval_algorithm_settings.score_threshold,
             )
         )
