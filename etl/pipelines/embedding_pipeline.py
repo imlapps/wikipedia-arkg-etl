@@ -21,8 +21,6 @@ class EmbeddingPipeline(ABC):
         self,
         *,
         documents: tuple[Document, ...],
-        distance_strategy: DistanceStrategy,
-        score_threshold: ScoreThreshold
     ) -> VectorStore:
         """
         Return an embedding store that contains embeddings of Documents.
@@ -35,6 +33,4 @@ class EmbeddingPipeline(ABC):
         return FAISS.from_documents(
             documents=list(documents),
             embedding=self._create_embedding_model(),
-            distance_strategy=distance_strategy,
-            score_threshold=score_threshold,
         )

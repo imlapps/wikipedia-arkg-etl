@@ -30,7 +30,7 @@ from etl.resources import (
     InputConfig,
     OpenaiSettings,
     OutputConfig,
-    PipelineConfig,
+    RetrievalPipelineConfig,
 )
 
 
@@ -112,13 +112,10 @@ def openai_settings() -> OpenaiSettings:
 
 
 @pytest.fixture(scope="session")
-def pipeline_config(
-    openai_settings: OpenaiSettings,
-) -> PipelineConfig:
-    """Return a PipelineConfig object."""
+def retrieval_pipeline_config() -> RetrievalPipelineConfig:
+    """Return a RetrievalPipelineConfig object."""
 
-    return PipelineConfig(
-        openai_settings=openai_settings,
+    return RetrievalPipelineConfig(
         distance_strategy=DistanceStrategy.COSINE,
         score_threshold=0.5,
     )
@@ -126,11 +123,11 @@ def pipeline_config(
 
 @pytest.fixture(scope="session")
 def openai_record_enrichment_pipeline(
-    pipeline_config: PipelineConfig,
+    openai_settings: OpenaiSettings,
 ) -> OpenaiRecordEnrichmentPipeline:
     """Return an OpenaiRecordEnrichmentPipeline object."""
 
-    return OpenaiRecordEnrichmentPipeline(pipeline_config=pipeline_config)
+    return OpenaiRecordEnrichmentPipeline(openai_settings=openai_settings)
 
 
 @pytest.fixture(scope="session")

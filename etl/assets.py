@@ -10,7 +10,8 @@ from etl.pipelines import (
     OpenaiRecordEnrichmentPipeline,
 )
 from etl.readers import WikipediaReader
-from etl.resources import ArkgConfig, InputConfig, OutputConfig, PipelineConfig
+from etl.resources import ArkgConfig, InputConfig, OutputConfig, RetrievalPipelineConfig
+from etl.resources.openai_settings import OpenaiSettings
 
 
 @asset
@@ -29,13 +30,13 @@ def wikipedia_articles_from_storage(
 @asset
 def wikipedia_articles_with_summaries(
     wikipedia_articles_from_storage: RecordTuple,
-    pipeline_config: PipelineConfig,
+    retrieval_pipeline_config: RetrievalPipelineConfig,
 ) -> RecordTuple:
     """Materialize an asset of Wikipedia articles with summaries."""
 
     return RecordTuple(
         records=tuple(
-            OpenaiRecordEnrichmentPipeline(pipeline_config).enrich_record(
+            OpenaiRecordEnrichmentPipeline(retrieval_pipeline_config).enrich_record(
                 wikipedia_article
             )
             for wikipedia_article in wikipedia_articles_from_storage.records
@@ -78,18 +79,16 @@ def documents_of_wikipedia_articles_with_summaries(
 @asset
 def wikipedia_articles_embedding_store(
     documents_of_wikipedia_articles_with_summaries: DocumentTuple,
-    pipeline_config: PipelineConfig,
+    openai_settings: OpenaiSettings,
     output_config: OutputConfig,
 ) -> None:
     """Materialize an asset of Wikipedia articles embeddings."""
 
     OpenaiEmbeddingPipeline(
-        openai_settings=pipeline_config.openai_settings,
+        openai_settings=openai_settings,
         output_config=output_config,
     ).create_embedding_store(
         documents=documents_of_wikipedia_articles_with_summaries.documents,
-        distance_strategy=pipeline_config.distance_strategy,
-        score_threshold=pipeline_config.score_threshold,
     )
 
 
@@ -97,18 +96,16 @@ def wikipedia_articles_embedding_store(
 def wikipedia_anti_recommendations(
     wikipedia_articles_from_storage: RecordTuple,
     documents_of_wikipedia_articles_with_summaries: DocumentTuple,
-    pipeline_config: PipelineConfig,
+    openai_settings: OpenaiSettings,
     output_config: OutputConfig,
 ) -> AntiRecommendationGraphTuple:
     """Materialize an asset of Wikipedia anti-recommendations."""
 
     wikipedia_anti_recommendations_embedding_store = OpenaiEmbeddingPipeline(
-        openai_settings=pipeline_config.openai_settings,
+        openai_settings=openai_settings,
         output_config=output_config,
     ).create_embedding_store(
         documents=documents_of_wikipedia_articles_with_summaries.documents,
-        distance_strategy=pipeline_config.distance_strategy,
-        score_threshold=pipeline_config.score_threshold,
     )
 
     return AntiRecommendationGraphTuple(

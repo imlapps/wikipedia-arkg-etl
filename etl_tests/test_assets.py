@@ -34,7 +34,7 @@ from etl.resources import (
     InputConfig,
     OpenaiSettings,
     OutputConfig,
-    PipelineConfig,
+    RetrievalPipelineConfig,
 )
 
 
@@ -48,7 +48,7 @@ def test_wikipedia_articles_from_storage(input_config: InputConfig) -> None:
 
 def test_wikipedia_articles_with_summaries(
     session_mocker: MockFixture,
-    pipeline_config: PipelineConfig,
+    openai_settings: OpenaiSettings,
     tuple_of_articles_with_summaries: tuple[wikipedia.Article, ...],
     article_with_summary: wikipedia.Article,
     openai_model_response: ModelResponse,
@@ -63,7 +63,7 @@ def test_wikipedia_articles_with_summaries(
     assert (
         wikipedia_articles_with_summaries(  # type: ignore[attr-defined]
             RecordTuple(records=tuple_of_articles_with_summaries),
-            pipeline_config,
+            openai_settings,
         )
         .records[0]
         .model_dump(by_alias=True)["summary"]
@@ -109,7 +109,7 @@ def test_documents_of_wikipedia_articles_with_summaries(
 
 def test_wikipedia_articles_embeddings(
     session_mocker: MockFixture,
-    pipeline_config: PipelineConfig,
+    openai_settings: OpenaiSettings,
     output_config: OutputConfig,
     faiss: FAISS,
     document_of_article_with_summary: Document,
@@ -122,7 +122,7 @@ def test_wikipedia_articles_embeddings(
 
     wikipedia_articles_embedding_store(
         DocumentTuple(documents=(document_of_article_with_summary,)),
-        pipeline_config,
+        openai_settings,
         output_config,
     )
 
@@ -130,7 +130,7 @@ def test_wikipedia_articles_embeddings(
 
 
 def test_wikipedia_anti_recommendations(
-    pipeline_config: PipelineConfig,
+    openai_settings: OpenaiSettings,
     output_config: OutputConfig,
     document_of_article_with_summary: Document,
     article: wikipedia.Article,
@@ -144,7 +144,7 @@ def test_wikipedia_anti_recommendations(
         wikipedia_anti_recommendations(  # type: ignore[attr-defined]
             RecordTuple(records=(article,)),
             DocumentTuple(documents=(document_of_article_with_summary,)),
-            pipeline_config,
+            openai_settings,
             output_config,
         ).anti_recommendation_graphs[0]
         == anti_recommendation_graph[0]

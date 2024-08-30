@@ -8,7 +8,8 @@ from langchain_openai import ChatOpenAI
 from etl.models import Record, wikipedia
 from etl.models.types import ModelQuestion, ModelResponse, RecordKey
 from etl.pipelines import RecordEnrichmentPipeline
-from etl.resources import PipelineConfig
+
+from etl.resources import OpenaiSettings
 
 
 class OpenaiRecordEnrichmentPipeline(RecordEnrichmentPipeline):
@@ -18,8 +19,8 @@ class OpenaiRecordEnrichmentPipeline(RecordEnrichmentPipeline):
     Uses OpenAI's generative AI models to enrich Records.
     """
 
-    def __init__(self, pipeline_config: PipelineConfig) -> None:
-        self.__pipeline_config = pipeline_config
+    def __init__(self, openai_settings: OpenaiSettings) -> None:
+        self.__openai_settings = openai_settings
         self.__template = """\
                 Keep the answer as concise as possible.
                 Question: {question}
@@ -36,8 +37,8 @@ class OpenaiRecordEnrichmentPipeline(RecordEnrichmentPipeline):
         """Return an OpenAI chat model."""
 
         return ChatOpenAI(
-            name=str(self.__pipeline_config.openai_settings.generative_model_name),
-            temperature=self.__pipeline_config.openai_settings.temperature,
+            name=str(self.__openai_settings.generative_model_name.value),
+            temperature=self.__openai_settings.temperature,
         )
 
     def __build_chain(self, model: ChatOpenAI) -> RunnableSerializable:
