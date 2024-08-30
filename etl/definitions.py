@@ -3,7 +3,7 @@ from pathlib import Path
 from dagster import Definitions, EnvVar, load_assets_from_modules
 from langchain_community.vectorstores.utils import DistanceStrategy
 
-from etl.models.types import EnrichmentType, RdfMimeType
+from etl.models.types import RdfMimeType
 from etl.resources.input_config import InputConfig
 
 from . import assets
@@ -35,9 +35,6 @@ definitions = Definitions(
         ),
         "pipeline_config": PipelineConfig(
             openai_settings=openai_settings,
-            enrichment_type=EnvVar("ETL_ENRICHMENT_TYPE").get_value(
-                default=EnrichmentType.SUMMARY
-            ),
             distance_strategy=EnvVar("ETL_DISTANCE_STRATEGY").get_value(
                 default=DistanceStrategy.EUCLIDEAN_DISTANCE
             ),

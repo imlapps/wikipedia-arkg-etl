@@ -6,7 +6,7 @@ from langchain.schema.runnable import RunnablePassthrough, RunnableSerializable
 from langchain_openai import ChatOpenAI
 
 from etl.models import Record, wikipedia
-from etl.models.types import EnrichmentType, ModelQuestion, ModelResponse, RecordKey
+from etl.models.types import ModelQuestion, ModelResponse, RecordKey
 from etl.pipelines import RecordEnrichmentPipeline
 from etl.resources import PipelineConfig
 
@@ -30,13 +30,7 @@ class OpenaiRecordEnrichmentPipeline(RecordEnrichmentPipeline):
 
         record_key_with_spaces = record_key.replace("_", " ")
 
-        match self.__pipeline_config.enrichment_type:
-            case EnrichmentType.SUMMARY:
-                return f"In 5 sentences, give a summary of {record_key_with_spaces} based on {record_key_with_spaces}'s Wikipedia entry."
-            case _:
-                raise ValueError(
-                    f"{self.__pipeline_config.enrichment_type} is an invalid WikipediaTransform enrichment type."
-                )
+        return f"In 5 sentences, give a summary of {record_key_with_spaces} based on {record_key_with_spaces}'s Wikipedia entry."
 
     def __create_chat_model(self) -> ChatOpenAI:
         """Return an OpenAI chat model."""
@@ -63,22 +57,14 @@ class OpenaiRecordEnrichmentPipeline(RecordEnrichmentPipeline):
     @override
     def enrich_record(self, record: Record) -> Record:
         """
-        Return a Record that has been enriched using OpenAI's generative AI models.
-
-        Return the original Record if PipelineConfig.enrichment_type is not a field of Record.
+        Return a wikipedia.Article that has been enriched with a summary
+        from OpenAI's generative AI models.
         """
 
-        if self.__pipeline_config.enrichment_type not in record.model_fields:
-            return record
-
-        return wikipedia.Article(
-            **(
-                record.model_dump(by_alias=True)
-                | {
-                    self.__pipeline_config.enrichment_type: self.__generate_response(
-                        question=self.__create_question(record.key),
-                        chain=self.__build_chain(self.__create_chat_model()),
-                    )
-                }
-            )
+        return wikipedia.Article.from_record(
+            record=record,
+            summary=self.__generate_response(
+                question=self.__create_question(record.key),
+                chain=self.__build_chain(self.__create_chat_model()),
+            ),
         )

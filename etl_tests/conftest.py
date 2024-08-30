@@ -13,7 +13,6 @@ from etl.models import WIKIPEDIA_BASE_URL, AntiRecommendation, wikipedia
 from etl.models.types import (
     AntiRecommendationKey,
     DataFileName,
-    EnrichmentType,
     ModelResponse,
     RdfMimeType,
     RecordKey,
@@ -113,22 +112,13 @@ def openai_settings() -> OpenaiSettings:
 
 
 @pytest.fixture(scope="session")
-def enrichment_type() -> EnrichmentType:
-    """Return a summary enrichment type."""
-
-    return EnrichmentType.SUMMARY
-
-
-@pytest.fixture(scope="session")
 def pipeline_config(
     openai_settings: OpenaiSettings,
-    enrichment_type: EnrichmentType,
 ) -> PipelineConfig:
     """Return a PipelineConfig object."""
 
     return PipelineConfig(
         openai_settings=openai_settings,
-        enrichment_type=enrichment_type,
         distance_strategy=DistanceStrategy.COSINE,
         score_threshold=0.5,
     )

@@ -24,5 +24,5 @@ def test_enrich_records(
         openai_record_enrichment_pipeline.enrich_record(record=article).model_dump(
             by_alias=True
         )["summary"]
-        == article_with_summary.summary
+        == openai_model_response
     )

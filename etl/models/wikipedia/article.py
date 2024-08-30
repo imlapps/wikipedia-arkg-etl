@@ -2,6 +2,7 @@ from pydantic import Field
 
 from etl.models.record import Record
 from etl.models.types import RecordKey, Summary
+from typing import Self
 
 
 class Article(Record):
@@ -9,3 +10,8 @@ class Article(Record):
 
     key: RecordKey = Field(..., alias="title")
     summary: Summary | None = None
+
+    @classmethod
+    def from_record(cls, *, record: Record, summary: Summary | None) -> Self:
+
+        return cls(title=record.key, url=record.url, summary=summary)
