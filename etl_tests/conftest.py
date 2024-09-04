@@ -9,6 +9,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain_openai import OpenAIEmbeddings
 
+from etl.databases.embedding_store import EmbeddingStore
 from etl.models import WIKIPEDIA_BASE_URL, AntiRecommendation, wikipedia
 from etl.models.types import (
     AntiRecommendationKey,
@@ -30,7 +31,7 @@ from etl.resources import (
     InputConfig,
     OpenaiSettings,
     OutputConfig,
-    RetrievalAlgorithmSettings,
+    RetrievalAlgorithmParameters,
 )
 
 
@@ -112,10 +113,10 @@ def openai_settings() -> OpenaiSettings:
 
 
 @pytest.fixture(scope="session")
-def retrieval_algorithm_settings() -> RetrievalAlgorithmSettings:
-    """Return a RetrievalAlgorithmSettings object."""
+def retrieval_algorithm_parameters() -> RetrievalAlgorithmParameters:
+    """Return a RetrievalAlgorithmParameters object."""
 
-    return RetrievalAlgorithmSettings(
+    return RetrievalAlgorithmParameters(
         distance_strategy=DistanceStrategy.COSINE,
         score_threshold=0.5,
     )
@@ -137,7 +138,8 @@ def openai_embedding_pipeline(
     """Return an OpenaiEmbedddingPipeline object."""
 
     return OpenaiEmbeddingPipeline(
-        openai_settings=openai_settings, output_config=output_config
+        openai_settings=openai_settings,
+        openai_embeddings_cache_directory_path=output_config.parse().openai_embeddings_cache_directory_path,
     )
 
 
@@ -203,6 +205,21 @@ def tuple_of_articles_with_summaries(
 
 
 @pytest.fixture(scope="session")
+def embedding_store(
+    openai_embedding_pipeline: OpenaiEmbeddingPipeline,
+    document_of_article_with_summary: Document,
+    output_config: OutputConfig,
+) -> EmbeddingStore.Descriptor:
+
+    return EmbeddingStore(
+        embedding_store=openai_embedding_pipeline.create_embedding_store(
+            documents=tuple(document_of_article_with_summary)
+        ),
+        embeddings_cache_directory_path=output_config.parse().openai_embeddings_cache_directory_path,
+    ).descriptor
+
+
+@pytest.fixture(scope="session")
 def faiss(openai_settings: OpenaiSettings) -> FAISS:  # noqa: ARG001
     """Return a FAISS object."""
 
@@ -217,12 +234,12 @@ def faiss(openai_settings: OpenaiSettings) -> FAISS:  # noqa: ARG001
 
 @pytest.fixture(scope="session")
 def anti_recommendation_retrieval_pipeline(
-    faiss: FAISS, retrieval_algorithm_settings: RetrievalAlgorithmSettings
+    faiss: FAISS, retrieval_algorithm_parameters: RetrievalAlgorithmParameters
 ) -> AntiRecommendationRetrievalPipeline:
     """Return an AntiRecommendationRetrievalPipeline object."""
 
     return AntiRecommendationRetrievalPipeline(
-        vector_store=faiss, retrieval_algorithm_settings=retrieval_algorithm_settings
+        vector_store=faiss, retrieval_algorithm_settings=retrieval_algorithm_parameters
     )
 
 

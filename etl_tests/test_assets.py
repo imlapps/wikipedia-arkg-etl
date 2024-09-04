@@ -16,6 +16,7 @@ from etl.assets import (
     wikipedia_articles_with_summaries,
     wikipedia_articles_with_summaries_json_file,
 )
+from etl.databases.embedding_store import EmbeddingStore
 from etl.models import (
     AntiRecommendationGraphTuple,
     DocumentTuple,
@@ -34,7 +35,7 @@ from etl.resources import (
     InputConfig,
     OpenaiSettings,
     OutputConfig,
-    RetrievalAlgorithmSettings,
+    RetrievalAlgorithmParameters,
 )
 
 
@@ -121,9 +122,9 @@ def test_wikipedia_articles_embeddings(
     )
 
     wikipedia_articles_embedding_store(
-        DocumentTuple(documents=(document_of_article_with_summary,)),
-        openai_settings,
         output_config,
+        openai_settings,
+        DocumentTuple(documents=(document_of_article_with_summary,)),
     )
 
     mock_faiss__from_documents.assert_called_once()
@@ -131,23 +132,23 @@ def test_wikipedia_articles_embeddings(
 
 def test_wikipedia_anti_recommendations(
     openai_settings: OpenaiSettings,
-    output_config: OutputConfig,
+    embedding_store: EmbeddingStore.Descriptor,
     document_of_article_with_summary: Document,
     article: wikipedia.Article,
     anti_recommendation_graph: tuple[
         tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
     ],
-    retrieval_algorithm_settings: RetrievalAlgorithmSettings,
+    retrieval_algorithm_parameters: RetrievalAlgorithmParameters,
 ) -> None:
     """Test that wikipedia_anti_recommendations successfully returns anti_recommendation_graphs."""
 
     assert (
         wikipedia_anti_recommendations(  # type: ignore[attr-defined]
-            RecordTuple(records=(article,)),
-            DocumentTuple(documents=(document_of_article_with_summary,)),
             openai_settings,
-            output_config,
-            retrieval_algorithm_settings,
+            embedding_store,
+            RecordTuple(records=(article,)),
+            retrieval_algorithm_parameters,
+            DocumentTuple(documents=(document_of_article_with_summary,)),
         ).anti_recommendation_graphs[0]
         == anti_recommendation_graph[0]
     )

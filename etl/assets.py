@@ -14,9 +14,10 @@ from etl.resources import (
     ArkgConfig,
     InputConfig,
     OutputConfig,
-    RetrievalAlgorithmSettings,
+    OpenaiSettings,
+    RetrievalAlgorithmParameters,
 )
-from etl.resources.openai_settings import OpenaiSettings
+from etl.databases import EmbeddingStore, ArkgStore
 
 
 @asset
@@ -82,36 +83,34 @@ def documents_of_wikipedia_articles_with_summaries(
 
 @asset
 def wikipedia_articles_embedding_store(
-    documents_of_wikipedia_articles_with_summaries: DocumentTuple,
-    openai_settings: OpenaiSettings,
     output_config: OutputConfig,
-) -> None:
+    openai_settings: OpenaiSettings,
+    documents_of_wikipedia_articles_with_summaries: DocumentTuple,
+) -> EmbeddingStore.Descriptor:
     """Materialize an asset of Wikipedia articles embeddings."""
 
-    OpenaiEmbeddingPipeline(
+    return EmbeddingStore.create(
         openai_settings=openai_settings,
-        output_config=output_config,
-    ).create_embedding_store(
-        documents=documents_of_wikipedia_articles_with_summaries.documents,
-    )
+        embeddings_cache_directory_path=output_config,
+        documents=documents_of_wikipedia_articles_with_summaries,
+    ).descriptor
 
 
 @asset
 def wikipedia_anti_recommendations(
-    wikipedia_articles_from_storage: RecordTuple,
-    documents_of_wikipedia_articles_with_summaries: DocumentTuple,
     openai_settings: OpenaiSettings,
-    output_config: OutputConfig,
-    retrieval_algorithm_settings: RetrievalAlgorithmSettings,
+    embedding_store: EmbeddingStore.Descriptor,
+    wikipedia_articles_from_storage: RecordTuple,
+    retrieval_algorithm_parameters: RetrievalAlgorithmParameters,
+    documents_of_wikipedia_articles_with_summaries: DocumentTuple,
 ) -> AntiRecommendationGraphTuple:
     """Materialize an asset of Wikipedia anti-recommendations."""
 
-    wikipedia_anti_recommendations_embedding_store = OpenaiEmbeddingPipeline(
+    wikipedia_anti_recommendations_embedding_store = EmbeddingStore.open(
+        descriptor=embedding_store,
         openai_settings=openai_settings,
-        output_config=output_config,
-    ).create_embedding_store(
-        documents=documents_of_wikipedia_articles_with_summaries.documents,
-    )
+        documents=documents_of_wikipedia_articles_with_summaries,
+    ).load()
 
     return AntiRecommendationGraphTuple(
         anti_recommendation_graphs=tuple(
@@ -121,7 +120,7 @@ def wikipedia_anti_recommendations(
                     anti_recommendation.key
                     for anti_recommendation in AntiRecommendationRetrievalPipeline(
                         vector_store=wikipedia_anti_recommendations_embedding_store,
-                        retrieval_algorithm_settings=retrieval_algorithm_settings,
+                        retrieval_algorithm_settings=retrieval_algorithm_parameters,
                     ).retrieve_documents(record_key=record.key, k=7)
                     if anti_recommendation.key != record.key
                 ),

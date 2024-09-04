@@ -5,11 +5,13 @@ from langchain.storage import LocalFileStore
 from langchain_core.embeddings import Embeddings
 from langchain_openai import OpenAIEmbeddings
 
-from etl.pipelines import EmbeddingPipeline
+from etl.pipelines import VectorStore
 from etl.resources import OpenaiSettings, OutputConfig
 
+from pathlib import Path
 
-class OpenaiEmbeddingPipeline(EmbeddingPipeline):
+
+class OpenaiEmbeddingPipeline(VectorStore):
     """
     A concrete implementation of EmbeddingPipeline.
 
@@ -17,18 +19,19 @@ class OpenaiEmbeddingPipeline(EmbeddingPipeline):
     """
 
     def __init__(
-        self, *, openai_settings: OpenaiSettings, output_config: OutputConfig
+        self,
+        *,
+        openai_settings: OpenaiSettings,
+        openai_embeddings_cache_directory_path: Path
     ) -> None:
         self.__openai_settings = openai_settings
-        self.__parsed_output_config: OutputConfig.Parsed = output_config.parse()
+        self.__openai_embeddings_cache_directory_path: Path = (
+            openai_embeddings_cache_directory_path.mkdir(parents=True, exist_ok=True)
+        )
 
     @override
     def _create_embedding_model(self) -> Embeddings:
         """Create and return an OpenAI embedding model."""
-
-        self.__parsed_output_config.openai_embeddings_cache_directory_path.mkdir(
-            parents=True, exist_ok=True
-        )
 
         openai_embeddings_model = OpenAIEmbeddings(
             model=str(self.__openai_settings.embedding_model_name.value)
@@ -36,8 +39,6 @@ class OpenaiEmbeddingPipeline(EmbeddingPipeline):
 
         return CacheBackedEmbeddings.from_bytes_store(
             openai_embeddings_model,
-            LocalFileStore(
-                self.__parsed_output_config.openai_embeddings_cache_directory_path
-            ),
+            LocalFileStore(self.__openai_embeddings_cache_directory_path),
             namespace=openai_embeddings_model.model,
         )

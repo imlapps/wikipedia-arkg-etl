@@ -3,6 +3,6 @@ from .input_config import InputConfig as InputConfig
 from .openai_settings import OpenaiSettings as OpenaiSettings
 from .output_config import OutputConfig as OutputConfig
 
-from .retrieval_algorithm_settings import (  # isort:skip
-    RetrievalAlgorithmSettings as RetrievalAlgorithmSettings,
+from .retrieval_algorithm_parameters import (
+    RetrievalAlgorithmParameters as RetrievalAlgorithmParameters,
 )
