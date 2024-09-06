@@ -8,7 +8,6 @@ from langchain_openai import ChatOpenAI
 from etl.models import Record, wikipedia
 from etl.models.types import ModelQuestion, ModelResponse, RecordKey
 from etl.pipelines import RecordEnrichmentPipeline
-
 from etl.resources import OpenaiSettings
 
 

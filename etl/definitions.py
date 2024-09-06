@@ -12,9 +12,8 @@ from .resources import (
     ArkgConfig,
     OpenaiSettings,
     OutputConfig,
-    RetrievalAlgorithmSettings,
+    RetrievalAlgorithmParameters,
 )
-
 
 definitions = Definitions(
     assets=load_assets_from_modules([assets]),
@@ -40,7 +39,7 @@ definitions = Definitions(
             / "data"
             / "output"
         ),
-        "retrieval_algorithm_settings": RetrievalAlgorithmSettings(
+        "retrieval_algorithm_parameters": RetrievalAlgorithmParameters(
             distance_strategy=EnvVar("ETL_DISTANCE_STRATEGY").get_value(
                 default=DistanceStrategy.EUCLIDEAN_DISTANCE
             ),

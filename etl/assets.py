@@ -2,6 +2,7 @@ import json
 
 from dagster import asset
 
+from etl.databases import ArkgDatabase, EmbeddingDatabase
 from etl.models import AntiRecommendationGraphTuple, DocumentTuple, RecordTuple
 from etl.pipelines import (
     AntiRecommendationRetrievalPipeline,
@@ -11,11 +12,10 @@ from etl.readers import WikipediaReader
 from etl.resources import (
     ArkgConfig,
     InputConfig,
-    OutputConfig,
     OpenaiSettings,
+    OutputConfig,
     RetrievalAlgorithmParameters,
 )
-from etl.databases import EmbeddingStore, ArkgStore
 
 
 @asset
@@ -84,31 +84,31 @@ def wikipedia_articles_embedding_store(
     output_config: OutputConfig,
     openai_settings: OpenaiSettings,
     documents_of_wikipedia_articles_with_summaries: DocumentTuple,
-) -> EmbeddingStore.Descriptor:
+) -> EmbeddingDatabase.Descriptor:
     """Materialize an asset of Wikipedia articles embeddings."""
 
-    return EmbeddingStore.create(
+    return EmbeddingDatabase.create(
         openai_settings=openai_settings,
-        embeddings_cache_directory_path=output_config,
-        documents=documents_of_wikipedia_articles_with_summaries,
+        embeddings_cache_directory_path=output_config.parse().openai_embeddings_cache_directory_path,
+        documents=documents_of_wikipedia_articles_with_summaries.documents,
     ).descriptor
 
 
 @asset
 def wikipedia_anti_recommendations(
     openai_settings: OpenaiSettings,
-    embedding_store: EmbeddingStore.Descriptor,
+    wikipedia_articles_embedding_store: EmbeddingDatabase.Descriptor,
     wikipedia_articles_from_storage: RecordTuple,
     retrieval_algorithm_parameters: RetrievalAlgorithmParameters,
     documents_of_wikipedia_articles_with_summaries: DocumentTuple,
 ) -> AntiRecommendationGraphTuple:
     """Materialize an asset of Wikipedia anti-recommendations."""
 
-    wikipedia_anti_recommendations_embedding_store = EmbeddingStore.open(
-        descriptor=embedding_store,
+    wikipedia_anti_recommendations_embedding_database = EmbeddingDatabase.open(
+        descriptor=wikipedia_articles_embedding_store,
         openai_settings=openai_settings,
-        documents=documents_of_wikipedia_articles_with_summaries,
-    ).load()
+        documents=documents_of_wikipedia_articles_with_summaries.documents,
+    ).read()
 
     return AntiRecommendationGraphTuple(
         anti_recommendation_graphs=tuple(
@@ -117,8 +117,8 @@ def wikipedia_anti_recommendations(
                 tuple(
                     anti_recommendation.key
                     for anti_recommendation in AntiRecommendationRetrievalPipeline(
-                        vector_store=wikipedia_anti_recommendations_embedding_store,
-                        retrieval_algorithm_settings=retrieval_algorithm_parameters,
+                        vector_store=wikipedia_anti_recommendations_embedding_database,
+                        retrieval_algorithm_parameters=retrieval_algorithm_parameters,
                     ).retrieve_documents(record_key=record.key, k=7)
                     if anti_recommendation.key != record.key
                 ),
@@ -153,19 +153,19 @@ def wikipedia_arkg(
     arkg_config: ArkgConfig,
     output_config: OutputConfig,
     wikipedia_anti_recommendations: AntiRecommendationGraphTuple,
-) -> ArkgStore.Descriptor:
+) -> ArkgDatabase.Descriptor:
     """Materialize a Wikipedia Anti-Recommendation Knowledge Graph asset."""
 
     parsed_output_config = output_config.parse()
 
-    arkg_store = ArkgStore.create(
+    wikipedia_arkg_database = ArkgDatabase.create(
         requests_cache_directory=parsed_output_config.requests_cache_directory_path,
-        anti_recommendation_graphs=wikipedia_anti_recommendations.anti_recommendation_graphs,
+        anti_recommendation_graphs=wikipedia_anti_recommendations,
         arkg_file_path=parsed_output_config.wikipedia_arkg_file_path,
     )
 
-    arkg_store.dump(
+    wikipedia_arkg_database.write(
         rdf_mime_type=arkg_config.rdf_mime_type,
     )
 
-    return arkg_store.descriptor
+    return wikipedia_arkg_database.descriptor

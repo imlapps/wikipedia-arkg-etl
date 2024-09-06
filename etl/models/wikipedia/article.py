@@ -1,8 +1,9 @@
+from typing import Self
+
 from pydantic import Field
 
 from etl.models.record import Record
 from etl.models.types import RecordKey, Summary
-from typing import Self
 
 
 class Article(Record):

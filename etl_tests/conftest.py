@@ -9,8 +9,8 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain_openai import OpenAIEmbeddings
 
-from etl.databases.arkg_store import ArkgStore
-from etl.databases.embedding_store import EmbeddingStore
+from etl.databases.arkg_database import ArkgDatabase
+from etl.databases.embedding_database import EmbeddingDatabase
 from etl.models import WIKIPEDIA_BASE_URL, AntiRecommendation, wikipedia
 from etl.models.types import (
     AntiRecommendationKey,
@@ -210,11 +210,11 @@ def embedding_store(
     openai_embedding_pipeline: OpenaiEmbeddingPipeline,
     document_of_article_with_summary: Document,
     output_config: OutputConfig,
-) -> EmbeddingStore.Descriptor:
+) -> EmbeddingDatabase.Descriptor:
 
-    return EmbeddingStore(
+    return EmbeddingDatabase(
         embedding_store=openai_embedding_pipeline.create_embedding_store(
-            documents=tuple(document_of_article_with_summary)
+            documents=(document_of_article_with_summary,)
         ),
         embeddings_cache_directory_path=output_config.parse().openai_embeddings_cache_directory_path,
     ).descriptor
@@ -240,7 +240,8 @@ def anti_recommendation_retrieval_pipeline(
     """Return an AntiRecommendationRetrievalPipeline object."""
 
     return AntiRecommendationRetrievalPipeline(
-        vector_store=faiss, retrieval_algorithm_settings=retrieval_algorithm_parameters
+        vector_store=faiss,
+        retrieval_algorithm_parameters=retrieval_algorithm_parameters,
     )
 
 
@@ -321,8 +322,8 @@ def arkg_store(
     anti_recommendation_graph: tuple[
         tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
     ],
-) -> ArkgStore.Descriptor:
-    return ArkgStore(
+) -> ArkgDatabase.Descriptor:
+    return ArkgDatabase(
         arkg=arkg_builder_pipeline.construct_graph(anti_recommendation_graph),
         arkg_file_path=output_config.parse().wikipedia_arkg_file_path,
     ).descriptor

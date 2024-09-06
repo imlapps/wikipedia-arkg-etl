@@ -3,11 +3,10 @@ from typing import final
 
 from langchain.docstore.document import Document
 from langchain_community.vectorstores import FAISS, VectorStore
-
 from langchain_core.embeddings import Embeddings
 
 
-class VectorStore(ABC):
+class EmbeddingPipeline(ABC):
     """An interface to build embedding pipelines that transform Records into embeddings."""
 
     @abstractmethod

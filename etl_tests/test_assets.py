@@ -3,7 +3,6 @@ import json
 from langchain.docstore.document import Document
 from langchain.schema.runnable import RunnableSequence
 from langchain_community.vectorstores import FAISS
-
 from pytest_mock import MockFixture
 
 from etl.assets import (
@@ -16,8 +15,8 @@ from etl.assets import (
     wikipedia_articles_with_summaries,
     wikipedia_articles_with_summaries_json_file,
 )
-from etl.databases.arkg_store import ArkgStore
-from etl.databases.embedding_store import EmbeddingStore
+from etl.databases.arkg_database import ArkgDatabase
+from etl.databases.embedding_database import EmbeddingDatabase
 from etl.models import (
     AntiRecommendationGraphTuple,
     DocumentTuple,
@@ -109,7 +108,7 @@ def test_documents_of_wikipedia_articles_with_summaries(
     )
 
 
-def test_wikipedia_articles_embeddings(
+def test_wikipedia_articles_embedding_store(
     session_mocker: MockFixture,
     openai_settings: OpenaiSettings,
     output_config: OutputConfig,
@@ -131,9 +130,9 @@ def test_wikipedia_articles_embeddings(
     mock_faiss__from_documents.assert_called_once()
 
 
-def test_wikipedia_anti_recommendations(
+def test_wikipedia_anti_recommendations(  # noqa: PLR0913
     openai_settings: OpenaiSettings,
-    embedding_store: EmbeddingStore.Descriptor,
+    embedding_store: EmbeddingDatabase.Descriptor,
     document_of_article_with_summary: Document,
     article: wikipedia.Article,
     anti_recommendation_graph: tuple[
@@ -180,8 +179,8 @@ def test_wikipedia_anti_recommendations_json_file(
             )
 
 
-def test_wikipedia_arkg(
-    arkg_store: ArkgStore.Descriptor,
+def test_wikipedia_arkg(  # noqa: PLR0913
+    arkg_store: ArkgDatabase.Descriptor,
     arkg_config: ArkgConfig,
     output_config: OutputConfig,
     anti_recommendation_key: AntiRecommendationKey,
@@ -201,12 +200,12 @@ def test_wikipedia_arkg(
     )
 
     anti_recommendation_node = next(
-        ArkgStore.open(arkg_store)
-        .load(
-            mime_type=arkg_config.rdf_mime_type,
+        ArkgDatabase.open(arkg_store)  # type: ignore[arg-type]
+        .read(
+            rdf_mime_type=arkg_config.rdf_mime_type,
         )
         .query(anti_recommendation_node_query)
-    )  # type: ignore[arg-type]
+    )
 
     assert (
         anti_recommendation_node["anti_recommendation"].value
