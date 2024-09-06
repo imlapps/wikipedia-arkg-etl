@@ -5,8 +5,6 @@ from dagster import asset
 from etl.models import AntiRecommendationGraphTuple, DocumentTuple, RecordTuple
 from etl.pipelines import (
     AntiRecommendationRetrievalPipeline,
-    ArkgBuilderPipeline,
-    OpenaiEmbeddingPipeline,
     OpenaiRecordEnrichmentPipeline,
 )
 from etl.readers import WikipediaReader
@@ -132,8 +130,8 @@ def wikipedia_anti_recommendations(
 
 @asset
 def wikipedia_anti_recommendations_json_file(
-    wikipedia_anti_recommendations: AntiRecommendationGraphTuple,
     output_config: OutputConfig,
+    wikipedia_anti_recommendations: AntiRecommendationGraphTuple,
 ) -> None:
     """Store the asset of Wikipedia anti-recommendations as JSON."""
 
@@ -152,15 +150,22 @@ def wikipedia_anti_recommendations_json_file(
 
 @asset
 def wikipedia_arkg(
-    wikipedia_anti_recommendations: AntiRecommendationGraphTuple,
     arkg_config: ArkgConfig,
     output_config: OutputConfig,
-) -> None:
+    wikipedia_anti_recommendations: AntiRecommendationGraphTuple,
+) -> ArkgStore.Descriptor:
     """Materialize a Wikipedia Anti-Recommendation Knowledge Graph asset."""
 
-    ArkgBuilderPipeline(
-        requests_cache_directory=output_config.parse().requests_cache_directory_path
-    ).construct_graph(wikipedia_anti_recommendations.anti_recommendation_graphs).dump(
-        output=output_config.parse().wikipedia_arkg_file_path,
-        mime_type=arkg_config.rdf_mime_type,
+    parsed_output_config = output_config.parse()
+
+    arkg_store = ArkgStore.create(
+        requests_cache_directory=parsed_output_config.requests_cache_directory_path,
+        anti_recommendation_graphs=wikipedia_anti_recommendations.anti_recommendation_graphs,
+        arkg_file_path=parsed_output_config.wikipedia_arkg_file_path,
     )
+
+    arkg_store.dump(
+        rdf_mime_type=arkg_config.rdf_mime_type,
+    )
+
+    return arkg_store.descriptor

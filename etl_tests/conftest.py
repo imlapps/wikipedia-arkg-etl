@@ -9,6 +9,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain_openai import OpenAIEmbeddings
 
+from etl.databases.arkg_store import ArkgStore
 from etl.databases.embedding_store import EmbeddingStore
 from etl.models import WIKIPEDIA_BASE_URL, AntiRecommendation, wikipedia
 from etl.models.types import (
@@ -311,6 +312,20 @@ def anti_recommendation_graph(
     """Return a tuple containing an anti_recommendation_graph."""
 
     return ((record_key, (anti_recommendation_key,)),)
+
+
+@pytest.fixture(scope="session")
+def arkg_store(
+    arkg_builder_pipeline: ArkgBuilderPipeline,
+    output_config: OutputConfig,
+    anti_recommendation_graph: tuple[
+        tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
+    ],
+) -> ArkgStore.Descriptor:
+    return ArkgStore(
+        arkg=arkg_builder_pipeline.construct_graph(anti_recommendation_graph),
+        arkg_file_path=output_config.parse().wikipedia_arkg_file_path,
+    ).descriptor
 
 
 @pytest.fixture(scope="session")

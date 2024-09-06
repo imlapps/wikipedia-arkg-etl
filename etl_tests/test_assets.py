@@ -3,7 +3,7 @@ import json
 from langchain.docstore.document import Document
 from langchain.schema.runnable import RunnableSequence
 from langchain_community.vectorstores import FAISS
-from pyoxigraph import Store
+
 from pytest_mock import MockFixture
 
 from etl.assets import (
@@ -16,6 +16,7 @@ from etl.assets import (
     wikipedia_articles_with_summaries,
     wikipedia_articles_with_summaries_json_file,
 )
+from etl.databases.arkg_store import ArkgStore
 from etl.databases.embedding_store import EmbeddingStore
 from etl.models import (
     AntiRecommendationGraphTuple,
@@ -163,10 +164,10 @@ def test_wikipedia_anti_recommendations_json_file(
     """Test that wikipedia_anti_recommendations_json_file successfully writes an anti_recommendation_graph to a JSON file."""
 
     wikipedia_anti_recommendations_json_file(
+        output_config,
         AntiRecommendationGraphTuple(
             anti_recommendation_graphs=anti_recommendation_graph
         ),
-        output_config,
     )
 
     with output_config.parse().wikipedia_anti_recommendations_file_path.open() as wikipedia_anti_recommendations_file:
@@ -180,30 +181,32 @@ def test_wikipedia_anti_recommendations_json_file(
 
 
 def test_wikipedia_arkg(
+    arkg_store: ArkgStore.Descriptor,
+    arkg_config: ArkgConfig,
+    output_config: OutputConfig,
+    anti_recommendation_key: AntiRecommendationKey,
     anti_recommendation_graph: tuple[
         tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
     ],
-    arkg_config: ArkgConfig,
-    output_config: OutputConfig,
     anti_recommendation_node_query: SparqlQuery,
-    anti_recommendation_key: AntiRecommendationKey,
 ) -> None:
     """Test that wikipedia_arkg successfully materializes a Wikipedia ARKG and writes it to file."""
+
     wikipedia_arkg(
+        arkg_config,
+        output_config,
         AntiRecommendationGraphTuple(
             anti_recommendation_graphs=anti_recommendation_graph
         ),
-        arkg_config,
-        output_config,
     )
 
-    store = Store()
-    store.load(
-        input=output_config.parse().wikipedia_arkg_file_path,
-        mime_type=arkg_config.rdf_mime_type,
-    )
-
-    anti_recommendation_node = next(store.query(anti_recommendation_node_query))  # type: ignore[arg-type]
+    anti_recommendation_node = next(
+        ArkgStore.open(arkg_store)
+        .load(
+            mime_type=arkg_config.rdf_mime_type,
+        )
+        .query(anti_recommendation_node_query)
+    )  # type: ignore[arg-type]
 
     assert (
         anti_recommendation_node["anti_recommendation"].value
