@@ -5,7 +5,7 @@ from langchain.schema import StrOutputParser
 from langchain.schema.runnable import RunnablePassthrough, RunnableSerializable
 from langchain_openai import ChatOpenAI
 
-from etl.models import Record, wikipedia
+from etl.models import Record, wikipedia, RecordKeys
 from etl.models.types import ModelQuestion, ModelResponse, RecordKey
 from etl.pipelines import RecordEnrichmentPipeline
 from etl.resources import OpenaiSettings
@@ -28,9 +28,7 @@ class OpenaiRecordEnrichmentPipeline(RecordEnrichmentPipeline):
     def __create_question(self, record_key: RecordKey) -> ModelQuestion:
         """Return a question for an OpenAI model."""
 
-        record_key_with_spaces = record_key.replace("_", " ")
-
-        return f"In 5 sentences, give a summary of {record_key_with_spaces} based on {record_key_with_spaces}'s Wikipedia entry."
+        return f"In 5 sentences, give a summary of {RecordKeys.to_prompt_friendly(record_key)}'s Wikipedia entry."
 
     def __create_chat_model(self) -> ChatOpenAI:
         """Return an OpenAI chat model."""

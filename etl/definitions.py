@@ -14,7 +14,7 @@ definitions = Definitions(
     jobs=[embedding_job, retrieval_job, arkg_job],
     resources={
         "input_config": InputConfig.from_env_vars(
-            data_files_directory_path_default=Path(__file__).parent.absolute()
+            data_directory_path_default=Path(__file__).parent.absolute()
             / "data"
             / "input"
             / "data_files",

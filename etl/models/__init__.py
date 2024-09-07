@@ -8,3 +8,4 @@ from .record_tuple import RecordTuple as RecordTuple
 from .wikipedia_base_url import WIKIPEDIA_BASE_URL as WIKIPEDIA_BASE_URL
 
 from .document_tuple import DocumentTuple as DocumentTuple  # isort: skip
+from .record_keys import RecordKeys as RecordKeys

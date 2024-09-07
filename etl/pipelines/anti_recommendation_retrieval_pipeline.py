@@ -1,6 +1,6 @@
 from langchain_community.vectorstores import VectorStore
 
-from etl.models import WIKIPEDIA_BASE_URL, AntiRecommendation
+from etl.models import WIKIPEDIA_BASE_URL, AntiRecommendation, RecordKeys
 from etl.models.types import DocumentsLimit, ModelQuestion, RecordKey
 from etl.pipelines import RetrievalPipeline
 from etl.resources import RetrievalAlgorithmParameters
@@ -29,9 +29,8 @@ class AntiRecommendationRetrievalPipeline(RetrievalPipeline):
         k: DocumentsLimit,
     ) -> ModelQuestion:
         """Return a query for the retrieval algorithm."""
-        record_key_with_spaces = record_key.replace("_", " ")
 
-        return f"What are {k} Wikipedia articles that are dissimilar but surprisingly similar to the Wikipedia article {record_key_with_spaces}"
+        return f"What are {k} Wikipedia articles that are dissimilar but surprisingly similar to the Wikipedia article {RecordKeys.to_prompt_friendly(record_key)}"
 
     def retrieve_documents(
         self,

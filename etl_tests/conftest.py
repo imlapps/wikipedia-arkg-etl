@@ -74,7 +74,7 @@ def input_config(
 
     if input_data_files_directory_path.exists():
         return InputConfig.default(
-            data_files_directory_path_default=input_data_files_directory_path,
+            data_directory_path_default=input_data_files_directory_path,
             data_file_names_default=data_file_names,
         )
     pytest.skip(reason="don't have input data files.")
@@ -90,13 +90,6 @@ def output_config() -> OutputConfig:
         / "data"
         / "output"
     )
-
-
-@pytest.fixture(scope="session")
-def arkg_config() -> ArkgConfig:
-    """Return an ArkgConfig object."""
-
-    return ArkgConfig(rdf_mime_type=RdfMimeType.TURTLE)
 
 
 @pytest.fixture(scope="session")
@@ -177,7 +170,7 @@ def article(record_key: RecordKey) -> wikipedia.Article:
 
     return wikipedia.Article(
         title=record_key,
-        url=WIKIPEDIA_BASE_URL + record_key.replace(" ", "_"),
+        url=WIKIPEDIA_BASE_URL + record_key,
     )
 
 
@@ -275,7 +268,7 @@ def anti_recommendation_article(
 
     return wikipedia.Article(
         title=anti_recommendation_key,
-        url=WIKIPEDIA_BASE_URL + anti_recommendation_key.replace(" ", "_"),
+        url=WIKIPEDIA_BASE_URL + anti_recommendation_key,
         summary="""Sankore Madrasah is an ancient center of learning located in Timbuktu, Mali, and is one of
                    the three prestigious madrassas that comprise the University of Timbuktu. Established in the 14th century,
                    it became a significant institution for higher education, attracting scholars from across Africa and the Islamic world.

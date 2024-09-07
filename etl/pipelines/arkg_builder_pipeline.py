@@ -15,8 +15,12 @@ class ArkgBuilderPipeline:
     """
 
     def __init__(self, requests_cache_directory: Path) -> None:
-        self.__requests_cache_directory = requests_cache_directory
         self.__store = Store()
+        requests_cache_directory.mkdir(parents=True, exist_ok=True)
+        self.__cached_session = CachedSession(
+            cache_name=requests_cache_directory / "wikidata_identifiers",
+            expire_after=3600,
+        )
 
     def __add_anti_recommendation_quads_to_store(
         self,
@@ -57,14 +61,7 @@ class ArkgBuilderPipeline:
     def __get_wikidata_iri(self, record_key: RecordKey) -> NamedNode:
         """Return a RDF node that contains the Wikidata IRI of record_key."""
 
-        self.__requests_cache_directory.mkdir(parents=True, exist_ok=True)
-
-        session = CachedSession(
-            cache_name=self.__requests_cache_directory / "wikidata_identifiers",
-            expire_after=3600,
-        )
-
-        response = session.get(
+        response = self.__cached_session.get(
             f"https://en.wikipedia.org/w/api.php?action=query&prop=pageprops&titles={record_key}&format=json"
         )
 
