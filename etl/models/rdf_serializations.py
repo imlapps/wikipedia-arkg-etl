@@ -1,11 +1,13 @@
+from etl.models.types import RdfMimeType
+
 """###An enum of RDF MIME types for an ARKG serialization."""
 
 rdf_serializations = frozenset(
     [
-        ("n_triples", "application/n-triples", ".nt"),
-        ("n_quads", "application/n-quads", ".nq"),
-        ("turtle", "text/turtle", ".ttl"),
-        ("trig", "application/trig", ".trig"),
-        ("rdf_xml", "application/rdf+xml", ".rdf"),
+        ("n_triples", RdfMimeType.N_TRIPLES, ".nt"),
+        ("n_quads", RdfMimeType.N_QUADS, ".nq"),
+        ("turtle", RdfMimeType.TURTLE, ".ttl"),
+        ("trig", RdfMimeType.TRIG, ".trig"),
+        ("rdf_xml", RdfMimeType.RDF_XML, ".rdf"),
     ]
 )

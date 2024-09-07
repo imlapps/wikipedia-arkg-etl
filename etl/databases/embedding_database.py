@@ -4,9 +4,9 @@ from typing import Self
 from langchain.docstore.document import Document
 from langchain_community.vectorstores import VectorStore
 
+from etl.databases import Database
 from etl.pipelines import OpenaiEmbeddingPipeline
 from etl.resources import OpenaiSettings
-from etl.databases import Database
 
 
 class EmbeddingDatabase(Database):

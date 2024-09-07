@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Self
 
 from pyoxigraph import Store
+
 from etl.databases import Database
 from etl.models import AntiRecommendationGraphTuple
 from etl.models.types import RdfMimeType

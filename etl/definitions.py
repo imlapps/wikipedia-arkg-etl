@@ -3,17 +3,11 @@ from pathlib import Path
 from dagster import Definitions, EnvVar, load_assets_from_modules
 from langchain_community.vectorstores.utils import DistanceStrategy
 
-from etl.models.types import RdfMimeType
 from etl.resources.input_config import InputConfig
 
 from . import assets
-from .jobs import embedding_job, retrieval_job, arkg_job
-from .resources import (
-    ArkgConfig,
-    OpenaiSettings,
-    OutputConfig,
-    RetrievalAlgorithmParameters,
-)
+from .jobs import arkg_job, embedding_job, retrieval_job
+from .resources import OpenaiSettings, OutputConfig, RetrievalAlgorithmParameters
 
 definitions = Definitions(
     assets=load_assets_from_modules([assets]),

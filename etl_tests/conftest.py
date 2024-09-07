@@ -21,8 +21,8 @@ from etl.models.types import (
     AntiRecommendationKey,
     DataFileName,
     ModelResponse,
-    RdfMimeType,
     RdfFileExtension,
+    RdfMimeType,
     RdfSerializationName,
     RecordKey,
     SparqlQuery,
@@ -35,7 +35,6 @@ from etl.pipelines import (
 )
 from etl.readers import WikipediaReader
 from etl.resources import (
-    ArkgConfig,
     InputConfig,
     OpenaiSettings,
     OutputConfig,
@@ -323,7 +322,9 @@ def anti_recommendation_graph(
 
 
 @pytest.fixture(scope="session")
-def rdf_serialization_tuple() -> tuple[str, RdfMimeType, str]:
+def rdf_serialization_tuple() -> (
+    tuple[RdfSerializationName, RdfMimeType, RdfFileExtension]
+):
 
     return next(iter(rdf_serializations))
 

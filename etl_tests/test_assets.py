@@ -9,11 +9,11 @@ from etl.assets import (
     documents_of_wikipedia_articles_with_summaries,
     wikipedia_anti_recommendations,
     wikipedia_anti_recommendations_json_file,
+    wikipedia_arkg_factory,
     wikipedia_articles_embedding_store,
     wikipedia_articles_from_storage,
     wikipedia_articles_with_summaries,
     wikipedia_articles_with_summaries_json_file,
-    wikipedia_arkg_factory,
 )
 from etl.databases.arkg_database import ArkgDatabase
 from etl.databases.embedding_database import EmbeddingDatabase
@@ -22,18 +22,16 @@ from etl.models import (
     DocumentTuple,
     RecordTuple,
     wikipedia,
-    rdf_serializations,
 )
 from etl.models.types import (
     AntiRecommendationKey,
     ModelResponse,
+    RdfFileExtension,
+    RdfMimeType,
+    RdfSerializationName,
     RecordKey,
     SparqlQuery,
-    RdfSerializationName,
-    RdfMimeType,
-    RdfFileExtension,
 )
-
 from etl.namespaces import ARKG
 from etl.resources import (
     InputConfig,
