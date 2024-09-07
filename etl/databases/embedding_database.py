@@ -10,6 +10,7 @@ from etl.resources import OpenaiSettings
 
 
 class EmbeddingDatabase(Database):
+    """A database that holds an embedding store."""
 
     def __init__(
         self,
@@ -28,7 +29,9 @@ class EmbeddingDatabase(Database):
         openai_settings: OpenaiSettings,
         embeddings_cache_directory_path: Path,
     ) -> Self:
-
+        """
+        Return an EmbeddingDatabase that contains an embedding store created by an OpenaiEmbeddingPipeline.
+        """
         return cls(
             embedding_store=OpenaiEmbeddingPipeline(
                 openai_settings=openai_settings,
@@ -39,6 +42,7 @@ class EmbeddingDatabase(Database):
 
     @property
     def descriptor(self) -> Database.Descriptor:
+        """The handle of the embedding store in the EmbeddingDatabase."""
 
         return EmbeddingDatabase.Descriptor(self.__embeddings_cache_directory_path)
 
@@ -50,7 +54,10 @@ class EmbeddingDatabase(Database):
         descriptor: Database.Descriptor,
         openai_settings: OpenaiSettings,
     ) -> Self:
-
+        """
+        Return an EmbeddingDatabase with an embedding store created by an OpenaiEmbeddingPipeline,
+        and an embeddings_cache_directory that is set to descriptor.
+        """
         return cls(
             embedding_store=OpenaiEmbeddingPipeline(
                 openai_settings=openai_settings,
@@ -62,4 +69,6 @@ class EmbeddingDatabase(Database):
     def read(
         self,
     ) -> VectorStore:
+        """Return an embedding store."""
+
         return self.__embedding_store

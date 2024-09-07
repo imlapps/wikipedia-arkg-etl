@@ -10,6 +10,7 @@ from etl.pipelines.arkg_builder_pipeline import ArkgBuilderPipeline
 
 
 class ArkgDatabase(Database):
+    """A database to store an Anti-Recommendation Knowledge Graph."""
 
     def __init__(self, *, arkg: Store, arkg_file_path: Path):
         self.__arkg = arkg
@@ -17,6 +18,8 @@ class ArkgDatabase(Database):
 
     @property
     def descriptor(self) -> Database.Descriptor:
+        """The handle of the ARKG stored in the ArkgDatabase."""
+
         return ArkgDatabase.Descriptor(self.__arkg_file_path)
 
     @classmethod
@@ -27,6 +30,10 @@ class ArkgDatabase(Database):
         requests_cache_directory: Path,
         anti_recommendation_graphs: AntiRecommendationGraphTuple,
     ) -> Self:
+        """
+        Return an ArkgDatabase that contains an ARKG Store constructed with an ArkgBuilderPipeline.
+        """
+
         return cls(
             arkg=ArkgBuilderPipeline(requests_cache_directory).construct_graph(
                 anti_recommendation_graphs.anti_recommendation_graphs
@@ -35,6 +42,11 @@ class ArkgDatabase(Database):
         )
 
     def write(self, arkg_mime_type: RdfMimeType) -> None:
+        """
+        Dump the ARKG Store into a file.
+
+        The RDF serialization is determined by arkg_mime_type.
+        """
         self.__arkg.dump(
             output=self.__arkg_file_path,
             mime_type=arkg_mime_type,
@@ -42,6 +54,7 @@ class ArkgDatabase(Database):
 
     @classmethod
     def open(cls, descriptor: Database.Descriptor) -> Self:
+        """Return an ArkgDatabase that has an empty RDF Store, and an arkg_file_path that is set to descriptor."""
 
         return cls(
             arkg=Store(),
@@ -49,6 +62,10 @@ class ArkgDatabase(Database):
         )
 
     def read(self, arkg_mime_type: RdfMimeType) -> Store:
+        """
+        Load an RDF serialization into an ARKG Store and return it.
 
+        The RDF serialization is determined by arkg_mime_type.
+        """
         self.__arkg.load(input=self.__arkg_file_path, mime_type=arkg_mime_type)
         return self.__arkg

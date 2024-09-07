@@ -158,6 +158,12 @@ def wikipedia_arkg_factory(
     rdf_mime_type: RdfMimeType,
     rdf_file_extension: RdfFileExtension,
 ) -> AssetsDefinition:
+    """
+    A factory to build Wikipedia ARKG assets.
+
+    Multiple assets are created based on different RDF serialization types.
+    Each RDF serialization type is characterized by a (name, mime_type, file_extension) triple.
+    """
 
     @asset(name=f"wikipedia_arkg_with_{rdf_serialization_name}_serialization")
     def wikipedia_arkg(
@@ -184,10 +190,6 @@ def wikipedia_arkg_factory(
 
 
 wikipedia_arkg_assets = [
-    wikipedia_arkg_factory(
-        rdf_serialization_name,
-        rdf_mime_type,
-        rdf_file_extension,
-    )
-    for rdf_serialization_name, rdf_mime_type, rdf_file_extension in rdf_serializations
+    wikipedia_arkg_factory(*rdf_serialization_tuple)
+    for rdf_serialization_tuple in rdf_serializations
 ]

@@ -5,7 +5,7 @@ from langchain.schema import StrOutputParser
 from langchain.schema.runnable import RunnablePassthrough, RunnableSerializable
 from langchain_openai import ChatOpenAI
 
-from etl.models import Record, wikipedia, RecordKeys
+from etl.models import Record, RecordKeys, wikipedia
 from etl.models.types import ModelQuestion, ModelResponse, RecordKey
 from etl.pipelines import RecordEnrichmentPipeline
 from etl.resources import OpenaiSettings

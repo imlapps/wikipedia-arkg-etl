@@ -1,8 +1,16 @@
-from etl.models.types import RdfMimeType
+from etl.models.types import RdfFileExtension, RdfMimeType, RdfSerializationName
 
-"""###An enum of RDF MIME types for an ARKG serialization."""
+"""
+A frozenset containing a tuple of RDF serializations.
 
-rdf_serializations = frozenset(
+Each tuple consists of:
+    - The `name` of the RDF serialization.
+    - The `mime type` of the RDF serialization.
+    - The `extension` of files that contain this RDF serialization.
+"""
+rdf_serializations: frozenset[
+    tuple[RdfSerializationName, RdfMimeType, RdfFileExtension]
+] = frozenset(
     [
         ("n_triples", RdfMimeType.N_TRIPLES, ".nt"),
         ("n_quads", RdfMimeType.N_QUADS, ".nq"),

@@ -189,6 +189,7 @@ def document_of_article_with_summary(
     article_with_summary: wikipedia.Article,
 ) -> Document:
     """Return a Document of a wikipedia.Article object with a set summary field."""
+
     return Document(
         page_content=str(article_with_summary.model_dump().get("summary")),
         metadata={"source": WIKIPEDIA_BASE_URL + article_with_summary.key},
@@ -210,6 +211,7 @@ def embedding_database(
     document_of_article_with_summary: Document,
     output_config: OutputConfig,
 ) -> EmbeddingDatabase.Descriptor:
+    """Return the descriptor of an EmbeddingDatabase."""
 
     return EmbeddingDatabase(
         embedding_store=openai_embedding_pipeline.create_embedding_store(
@@ -318,6 +320,7 @@ def anti_recommendation_graph(
 def rdf_serialization_tuple() -> (
     tuple[RdfSerializationName, RdfMimeType, RdfFileExtension]
 ):
+    """Return a tuple from the rdf_serializations frozenset."""
 
     return next(iter(rdf_serializations))
 
@@ -331,6 +334,8 @@ def arkg_database(
     ],
     rdf_serialization_tuple: tuple[RdfSerializationName, RdfMimeType, RdfFileExtension],
 ) -> ArkgDatabase.Descriptor:
+    """Return the descriptor of an ArkgDatabase."""
+
     return ArkgDatabase(
         arkg=arkg_builder_pipeline.construct_graph(anti_recommendation_graph),
         arkg_file_path=output_config.parse().wikipedia_arkg_file_path.with_suffix(
