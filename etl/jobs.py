@@ -2,8 +2,8 @@ from dagster import define_asset_job
 
 from .assets import (
     wikipedia_anti_recommendations,
-    wikipedia_arkg,
     wikipedia_articles_embedding_store,
+    wikipedia_arkg_assets,
 )
 
 embedding_job = define_asset_job(
@@ -13,4 +13,4 @@ retrieval_job = define_asset_job(
     "retrieval_job",
     selection=["*" + wikipedia_anti_recommendations.key.path[0]],
 )
-arkg_job = define_asset_job("arkg_job", selection=["*" + wikipedia_arkg.key.path[0]])
+arkg_job = define_asset_job("arkg_job", selection=wikipedia_arkg_assets)

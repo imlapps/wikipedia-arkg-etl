@@ -71,7 +71,7 @@ class OutputConfig(ConfigurableResource):  # type: ignore[misc]
         def wikipedia_arkg_file_path(self) -> Path:
             """The Path of the file that contains a Wikipedia ARKG."""
 
-            return self.anti_recommendations_directory_path / "wikipedia_arkg.ttl"
+            return self.anti_recommendations_directory_path / "wikipedia_arkg"
 
     output_directory_path: str
 

@@ -24,9 +24,9 @@ class EmbeddingDatabase(Database):
     def create(
         cls,
         *,
+        documents: tuple[Document, ...],
         openai_settings: OpenaiSettings,
         embeddings_cache_directory_path: Path,
-        documents: tuple[Document, ...],
     ) -> Self:
 
         return cls(
@@ -45,9 +45,10 @@ class EmbeddingDatabase(Database):
     @classmethod
     def open(
         cls,
+        *,
+        documents: tuple[Document, ...],
         descriptor: Database.Descriptor,
         openai_settings: OpenaiSettings,
-        documents: tuple[Document, ...],
     ) -> Self:
 
         return cls(

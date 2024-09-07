@@ -4,7 +4,7 @@ from typing import Self
 from pyoxigraph import Store
 from etl.databases import Database
 from etl.models import AntiRecommendationGraphTuple
-from etl.models.types.rdf_mime_type import RdfMimeType
+from etl.models.types import RdfMimeType
 from etl.pipelines.arkg_builder_pipeline import ArkgBuilderPipeline
 
 
@@ -22,9 +22,9 @@ class ArkgDatabase(Database):
     def create(
         cls,
         *,
+        arkg_file_path: Path,
         requests_cache_directory: Path,
         anti_recommendation_graphs: AntiRecommendationGraphTuple,
-        arkg_file_path: Path
     ) -> Self:
         return cls(
             arkg=ArkgBuilderPipeline(requests_cache_directory).construct_graph(
@@ -33,10 +33,10 @@ class ArkgDatabase(Database):
             arkg_file_path=arkg_file_path,
         )
 
-    def write(self, rdf_mime_type: RdfMimeType) -> None:
+    def write(self, arkg_mime_type: RdfMimeType) -> None:
         self.__arkg.dump(
             output=self.__arkg_file_path,
-            mime_type=rdf_mime_type,
+            mime_type=arkg_mime_type,
         )
 
     @classmethod
@@ -47,7 +47,7 @@ class ArkgDatabase(Database):
             arkg_file_path=descriptor.path,
         )
 
-    def read(self, rdf_mime_type: RdfMimeType) -> Store:
+    def read(self, arkg_mime_type: RdfMimeType) -> Store:
 
-        self.__arkg.load(input=self.__arkg_file_path, mime_type=rdf_mime_type)
+        self.__arkg.load(input=self.__arkg_file_path, mime_type=arkg_mime_type)
         return self.__arkg

@@ -9,11 +9,11 @@ from etl.assets import (
     documents_of_wikipedia_articles_with_summaries,
     wikipedia_anti_recommendations,
     wikipedia_anti_recommendations_json_file,
-    wikipedia_arkg,
     wikipedia_articles_embedding_store,
     wikipedia_articles_from_storage,
     wikipedia_articles_with_summaries,
     wikipedia_articles_with_summaries_json_file,
+    wikipedia_arkg_factory,
 )
 from etl.databases.arkg_database import ArkgDatabase
 from etl.databases.embedding_database import EmbeddingDatabase
@@ -22,16 +22,20 @@ from etl.models import (
     DocumentTuple,
     RecordTuple,
     wikipedia,
+    rdf_serializations,
 )
 from etl.models.types import (
     AntiRecommendationKey,
     ModelResponse,
     RecordKey,
     SparqlQuery,
+    RdfSerializationName,
+    RdfMimeType,
+    RdfFileExtension,
 )
+
 from etl.namespaces import ARKG
 from etl.resources import (
-    ArkgConfig,
     InputConfig,
     OpenaiSettings,
     OutputConfig,
@@ -132,7 +136,7 @@ def test_wikipedia_articles_embedding_store(
 
 def test_wikipedia_anti_recommendations(  # noqa: PLR0913
     openai_settings: OpenaiSettings,
-    embedding_store: EmbeddingDatabase.Descriptor,
+    embedding_database: EmbeddingDatabase.Descriptor,
     document_of_article_with_summary: Document,
     article: wikipedia.Article,
     anti_recommendation_graph: tuple[
@@ -145,9 +149,9 @@ def test_wikipedia_anti_recommendations(  # noqa: PLR0913
     assert (
         wikipedia_anti_recommendations(  # type: ignore[attr-defined]
             openai_settings,
-            embedding_store,
             RecordTuple(records=(article,)),
             retrieval_algorithm_parameters,
+            embedding_database,
             DocumentTuple(documents=(document_of_article_with_summary,)),
         ).anti_recommendation_graphs[0]
         == anti_recommendation_graph[0]
@@ -179,20 +183,19 @@ def test_wikipedia_anti_recommendations_json_file(
             )
 
 
-def test_wikipedia_arkg(  # noqa: PLR0913
-    arkg_store: ArkgDatabase.Descriptor,
-    arkg_config: ArkgConfig,
+def test_wikipedia_arkg_factory(  # noqa: PLR0913
     output_config: OutputConfig,
+    arkg_database: ArkgDatabase.Descriptor,
     anti_recommendation_key: AntiRecommendationKey,
     anti_recommendation_graph: tuple[
         tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
     ],
     anti_recommendation_node_query: SparqlQuery,
+    rdf_serialization_tuple: tuple[RdfSerializationName, RdfMimeType, RdfFileExtension],
 ) -> None:
-    """Test that wikipedia_arkg successfully materializes a Wikipedia ARKG and writes it to file."""
+    """Test that wikipedia_arkg_factory successfully materializes a Wikipedia ARKG and writes it to file."""
 
-    wikipedia_arkg(
-        arkg_config,
+    wikipedia_arkg_factory(*rdf_serialization_tuple)(
         output_config,
         AntiRecommendationGraphTuple(
             anti_recommendation_graphs=anti_recommendation_graph
@@ -200,10 +203,8 @@ def test_wikipedia_arkg(  # noqa: PLR0913
     )
 
     anti_recommendation_node = next(
-        ArkgDatabase.open(arkg_store)  # type: ignore[arg-type]
-        .read(
-            rdf_mime_type=arkg_config.rdf_mime_type,
-        )
+        ArkgDatabase.open(arkg_database)  # type: ignore[arg-type]
+        .read(arkg_mime_type=rdf_serialization_tuple[1])
         .query(anti_recommendation_node_query)
     )
 

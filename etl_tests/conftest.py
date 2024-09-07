@@ -11,12 +11,19 @@ from langchain_openai import OpenAIEmbeddings
 
 from etl.databases.arkg_database import ArkgDatabase
 from etl.databases.embedding_database import EmbeddingDatabase
-from etl.models import WIKIPEDIA_BASE_URL, AntiRecommendation, wikipedia
+from etl.models import (
+    WIKIPEDIA_BASE_URL,
+    AntiRecommendation,
+    rdf_serializations,
+    wikipedia,
+)
 from etl.models.types import (
     AntiRecommendationKey,
     DataFileName,
     ModelResponse,
     RdfMimeType,
+    RdfFileExtension,
+    RdfSerializationName,
     RecordKey,
     SparqlQuery,
 )
@@ -206,7 +213,7 @@ def tuple_of_articles_with_summaries(
 
 
 @pytest.fixture(scope="session")
-def embedding_store(
+def embedding_database(
     openai_embedding_pipeline: OpenaiEmbeddingPipeline,
     document_of_article_with_summary: Document,
     output_config: OutputConfig,
@@ -316,16 +323,25 @@ def anti_recommendation_graph(
 
 
 @pytest.fixture(scope="session")
-def arkg_store(
-    arkg_builder_pipeline: ArkgBuilderPipeline,
+def rdf_serialization_tuple() -> tuple[str, RdfMimeType, str]:
+
+    return next(iter(rdf_serializations))
+
+
+@pytest.fixture(scope="session")
+def arkg_database(
     output_config: OutputConfig,
+    arkg_builder_pipeline: ArkgBuilderPipeline,
     anti_recommendation_graph: tuple[
         tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
     ],
+    rdf_serialization_tuple: tuple[RdfSerializationName, RdfMimeType, RdfFileExtension],
 ) -> ArkgDatabase.Descriptor:
     return ArkgDatabase(
         arkg=arkg_builder_pipeline.construct_graph(anti_recommendation_graph),
-        arkg_file_path=output_config.parse().wikipedia_arkg_file_path,
+        arkg_file_path=output_config.parse().wikipedia_arkg_file_path.with_suffix(
+            rdf_serialization_tuple[-1]
+        ),
     ).descriptor
 
 

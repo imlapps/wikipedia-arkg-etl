@@ -11,6 +11,8 @@ from .open_ai_generative_model_name import (
     OpenAiGenerativeModelName as OpenAiGenerativeModelName,
 )
 from .rdf_mime_type import RdfMimeType as RdfMimeType
+from .rdf_file_extension import RdfFileExtension as RdfFileExtension
+from .rdf_serialization_name import RdfSerializationName as RdfSerializationName
 from .record_key import RecordKey as RecordKey
 from .score_threshold import ScoreThreshold as ScoreThreshold
 from .sparql_query import SparqlQuery as SparqlQuery

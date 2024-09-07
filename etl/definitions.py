@@ -7,7 +7,7 @@ from etl.models.types import RdfMimeType
 from etl.resources.input_config import InputConfig
 
 from . import assets
-from .jobs import embedding_job, retrieval_job
+from .jobs import embedding_job, retrieval_job, arkg_job
 from .resources import (
     ArkgConfig,
     OpenaiSettings,
@@ -17,13 +17,8 @@ from .resources import (
 
 definitions = Definitions(
     assets=load_assets_from_modules([assets]),
-    jobs=[embedding_job, retrieval_job],
+    jobs=[embedding_job, retrieval_job, arkg_job],
     resources={
-        "arkg_config": ArkgConfig(
-            rdf_mime_type=EnvVar("ETL_RDF_MIME_TYPE").get_value(
-                default=RdfMimeType.TURTLE
-            )
-        ),
         "input_config": InputConfig.from_env_vars(
             data_files_directory_path_default=Path(__file__).parent.absolute()
             / "data"

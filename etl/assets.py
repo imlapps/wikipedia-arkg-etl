@@ -1,16 +1,21 @@
 import json
 
-from dagster import asset
+from dagster import AssetsDefinition, asset
 
 from etl.databases import ArkgDatabase, EmbeddingDatabase
-from etl.models import AntiRecommendationGraphTuple, DocumentTuple, RecordTuple
+from etl.models import (
+    AntiRecommendationGraphTuple,
+    DocumentTuple,
+    RecordTuple,
+    rdf_serializations,
+)
+from etl.models.types import RdfMimeType, RdfFileExtension, RdfSerializationName
 from etl.pipelines import (
     AntiRecommendationRetrievalPipeline,
     OpenaiRecordEnrichmentPipeline,
 )
 from etl.readers import WikipediaReader
 from etl.resources import (
-    ArkgConfig,
     InputConfig,
     OpenaiSettings,
     OutputConfig,
@@ -89,24 +94,24 @@ def wikipedia_articles_embedding_store(
 
     return EmbeddingDatabase.create(
         openai_settings=openai_settings,
-        embeddings_cache_directory_path=output_config.parse().openai_embeddings_cache_directory_path,
         documents=documents_of_wikipedia_articles_with_summaries.documents,
+        embeddings_cache_directory_path=output_config.parse().openai_embeddings_cache_directory_path,
     ).descriptor
 
 
 @asset
 def wikipedia_anti_recommendations(
     openai_settings: OpenaiSettings,
-    wikipedia_articles_embedding_store: EmbeddingDatabase.Descriptor,
     wikipedia_articles_from_storage: RecordTuple,
     retrieval_algorithm_parameters: RetrievalAlgorithmParameters,
+    wikipedia_articles_embedding_store: EmbeddingDatabase.Descriptor,
     documents_of_wikipedia_articles_with_summaries: DocumentTuple,
 ) -> AntiRecommendationGraphTuple:
     """Materialize an asset of Wikipedia anti-recommendations."""
 
     wikipedia_anti_recommendations_embedding_database = EmbeddingDatabase.open(
-        descriptor=wikipedia_articles_embedding_store,
         openai_settings=openai_settings,
+        descriptor=wikipedia_articles_embedding_store,
         documents=documents_of_wikipedia_articles_with_summaries.documents,
     ).read()
 
@@ -148,24 +153,41 @@ def wikipedia_anti_recommendations_json_file(
         )
 
 
-@asset
-def wikipedia_arkg(
-    arkg_config: ArkgConfig,
-    output_config: OutputConfig,
-    wikipedia_anti_recommendations: AntiRecommendationGraphTuple,
-) -> ArkgDatabase.Descriptor:
-    """Materialize a Wikipedia Anti-Recommendation Knowledge Graph asset."""
+def wikipedia_arkg_factory(
+    rdf_serialization_name: RdfSerializationName,
+    rdf_mime_type: RdfMimeType,
+    rdf_file_extension: RdfFileExtension,
+) -> AssetsDefinition:
 
-    parsed_output_config = output_config.parse()
+    @asset(name=f"wikipedia_arkg_with_{rdf_serialization_name}_serialization")
+    def wikipedia_arkg(
+        output_config: OutputConfig,
+        wikipedia_anti_recommendations: AntiRecommendationGraphTuple,
+    ) -> ArkgDatabase.Descriptor:
+        """Materialize a Wikipedia Anti-Recommendation Knowledge Graph asset."""
 
-    wikipedia_arkg_database = ArkgDatabase.create(
-        requests_cache_directory=parsed_output_config.requests_cache_directory_path,
-        anti_recommendation_graphs=wikipedia_anti_recommendations,
-        arkg_file_path=parsed_output_config.wikipedia_arkg_file_path,
+        parsed_output_config = output_config.parse()
+
+        wikipedia_arkg_database = ArkgDatabase.create(
+            requests_cache_directory=parsed_output_config.requests_cache_directory_path,
+            anti_recommendation_graphs=wikipedia_anti_recommendations,
+            arkg_file_path=parsed_output_config.wikipedia_arkg_file_path.with_suffix(
+                rdf_file_extension
+            ),
+        )
+
+        wikipedia_arkg_database.write(arkg_mime_type=rdf_mime_type)
+
+        return wikipedia_arkg_database.descriptor
+
+    return wikipedia_arkg
+
+
+wikipedia_arkg_assets = [
+    wikipedia_arkg_factory(
+        rdf_serialization_name,
+        rdf_mime_type,
+        rdf_file_extension,
     )
-
-    wikipedia_arkg_database.write(
-        rdf_mime_type=arkg_config.rdf_mime_type,
-    )
-
-    return wikipedia_arkg_database.descriptor
+    for rdf_serialization_name, rdf_mime_type, rdf_file_extension in rdf_serializations
+]
