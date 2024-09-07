@@ -49,7 +49,7 @@ class ArkgBuilderPipeline:
             self.__store.add(
                 Quad(
                     anti_recommendation_iri,
-                    SCHEMA.ITEMREVIEWED,
+                    SCHEMA.ITEM_REVIEWED,
                     item_reviewed,
                 )
             )
@@ -97,7 +97,7 @@ class ArkgBuilderPipeline:
                 Quad(
                     record_key_wikidata_iri,
                     RDF.TYPE,
-                    SCHEMA.WEBPAGE,
+                    SCHEMA.WEB_PAGE,
                 ),
             )
 

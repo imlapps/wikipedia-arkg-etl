@@ -4,8 +4,10 @@ from pyoxigraph import NamedNode
 class SCHEMA:
     """A class containing Schema.org RDF Nodes."""
 
-    TITLE = NamedNode("http://schema.org/title")
-    URL = NamedNode("http://schema.org/url")
-    RECOMMENDATION = NamedNode("http://schema.org/Recommendation")
-    ITEMREVIEWED = NamedNode("http://schema.org/itemReviewed")
-    WEBPAGE = NamedNode("http://schema.org/WebPage")
+    BASE_IRI = NamedNode("http://schema.org/")
+
+    TITLE = NamedNode(BASE_IRI.value + "title")
+    URL = NamedNode(BASE_IRI.value + "url")
+    RECOMMENDATION = NamedNode(BASE_IRI.value + "Recommendation")
+    ITEM_REVIEWED = NamedNode(BASE_IRI.value + "itemReviewed")
+    WEB_PAGE = NamedNode(BASE_IRI.value + "WebPage")
