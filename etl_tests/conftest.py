@@ -9,8 +9,8 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain_openai import OpenAIEmbeddings
 
-from etl.databases.arkg_database import ArkgDatabase
-from etl.databases.embedding_database import EmbeddingDatabase
+from etl.stores.arkg_store import ArkgStore
+from etl.stores.embedding_store import EmbeddingStore
 from etl.models import (
     WIKIPEDIA_BASE_URL,
     AntiRecommendation,
@@ -210,14 +210,14 @@ def embedding_database(
     openai_embedding_pipeline: OpenaiEmbeddingPipeline,
     document_of_article_with_summary: Document,
     output_config: OutputConfig,
-) -> EmbeddingDatabase.Descriptor:
+) -> EmbeddingStore.Descriptor:
     """Return the descriptor of an EmbeddingDatabase."""
 
-    return EmbeddingDatabase(
+    return EmbeddingStore(
         embedding_store=openai_embedding_pipeline.create_embedding_store(
             documents=(document_of_article_with_summary,)
         ),
-        embeddings_cache_directory_path=output_config.parse().openai_embeddings_cache_directory_path,
+        embedding_store_directory_path=output_config.parse().openai_embeddings_cache_directory_path,
     ).descriptor
 
 
@@ -250,8 +250,12 @@ def anti_recommendation_retrieval_pipeline(
 def arkg_builder_pipeline(output_config: OutputConfig) -> ArkgBuilderPipeline:
     """Return an ArkgBuilderPipeline object."""
 
+    parsed_output_config = output_config.parse()
+
     return ArkgBuilderPipeline(
-        requests_cache_directory=output_config.parse().requests_cache_directory_path
+        arkg_store_path=parsed_output_config.wikipedia_arkg_store_directory_path
+        / "test",
+        requests_cache_directory=parsed_output_config.requests_cache_directory_path,
     )
 
 
@@ -333,12 +337,12 @@ def arkg_database(
         tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
     ],
     rdf_serialization_tuple: tuple[RdfSerializationName, RdfMimeType, RdfFileExtension],
-) -> ArkgDatabase.Descriptor:
+) -> ArkgStore.Descriptor:
     """Return the descriptor of an ArkgDatabase."""
 
-    return ArkgDatabase(
-        arkg=arkg_builder_pipeline.construct_graph(anti_recommendation_graph),
-        arkg_file_path=output_config.parse().wikipedia_arkg_file_path.with_suffix(
+    return ArkgStore(
+        arkg_store=arkg_builder_pipeline.construct_graph(anti_recommendation_graph),
+        arkg_store_path=output_config.parse().wikipedia_arkg_file_path.with_suffix(
             rdf_serialization_tuple[-1]
         ),
     ).descriptor

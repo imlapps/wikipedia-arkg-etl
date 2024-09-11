@@ -14,9 +14,12 @@ class ArkgBuilderPipeline:
     Constructs a RDF Store from a tuple of anti-recommendation graphs.
     """
 
-    def __init__(self, requests_cache_directory: Path) -> None:
-        self.__store = Store()
+    def __init__(
+        self, *, arkg_store_path: Path, requests_cache_directory: Path
+    ) -> None:
+        arkg_store_path.mkdir(exist_ok=True, parents=True)
         requests_cache_directory.mkdir(parents=True, exist_ok=True)
+        self.__arkg_store = Store(arkg_store_path)
         self.__cached_session = CachedSession(
             cache_name=requests_cache_directory / "wikidata_identifiers",
             expire_after=3600,
@@ -43,14 +46,14 @@ class ArkgBuilderPipeline:
                 record_key=anti_recommendation_key
             )
 
-            self.__store.add(
+            self.__arkg_store.add(
                 Quad(
                     anti_recommendation_iri,
                     RDF.TYPE,
                     SCHEMA.RECOMMENDATION,
                 )
             )
-            self.__store.add(
+            self.__arkg_store.add(
                 Quad(
                     anti_recommendation_iri,
                     SCHEMA.ITEM_REVIEWED,
@@ -90,7 +93,7 @@ class ArkgBuilderPipeline:
             record_key = graph[0]
             record_key_wikidata_iri = self.__get_wikidata_iri(record_key)
 
-            self.__store.add(
+            self.__arkg_store.add(
                 Quad(
                     record_key_wikidata_iri,
                     RDF.TYPE,
@@ -98,7 +101,7 @@ class ArkgBuilderPipeline:
                 ),
             )
 
-            self.__store.add(
+            self.__arkg_store.add(
                 Quad(
                     record_key_wikidata_iri,
                     SCHEMA.TITLE,
@@ -106,7 +109,7 @@ class ArkgBuilderPipeline:
                 )
             )
 
-            self.__store.add(
+            self.__arkg_store.add(
                 Quad(
                     record_key_wikidata_iri,
                     SCHEMA.URL,
@@ -119,4 +122,4 @@ class ArkgBuilderPipeline:
                 item_reviewed=record_key_wikidata_iri,
             )
 
-        return self.__store
+        return self.__arkg_store
