@@ -25,7 +25,7 @@ class ArkgStore:
     def __enter__(self) -> Self:
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
+    def __exit__(self, exc_type, exc_value, traceback) -> None:  # noqa: ANN001
         del self.__arkg_store
 
     @classmethod
@@ -79,7 +79,7 @@ class ArkgStore:
             mime_type=arkg_mime_type,
         )
 
-    def load(self, arkg_file_path: Path, arkg_mime_type: RdfMimeType) -> ox.Store:
+    def load(self, arkg_file_path: Path, arkg_mime_type: RdfMimeType) -> None:
         """
         Load an RDF serialization into an ARKG Store and return it.
 

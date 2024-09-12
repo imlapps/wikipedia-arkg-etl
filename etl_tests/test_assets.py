@@ -4,19 +4,17 @@ from langchain.docstore.document import Document
 from langchain.schema.runnable import RunnableSequence
 from langchain_community.vectorstores import FAISS
 from pytest_mock import MockFixture
-
+from typing import cast
 from etl.assets import (
     documents_of_wikipedia_articles_with_summaries,
-    wikipedia_anti_recommendations,
     wikipedia_anti_recommendations_json_file,
-    wikipedia_arkg_factory,
+    wikipedia_arkg_asset_factory,
     wikipedia_articles_embedding_store,
     wikipedia_articles_from_storage,
     wikipedia_articles_with_summaries,
     wikipedia_articles_with_summaries_json_file,
 )
 from etl.stores.arkg_store import ArkgStore
-from etl.stores.embedding_store import EmbeddingStore
 from etl.models import (
     AntiRecommendationGraphTuple,
     DocumentTuple,
@@ -37,7 +35,6 @@ from etl.resources import (
     InputConfig,
     OpenaiSettings,
     OutputConfig,
-    RetrievalAlgorithmParameters,
 )
 
 
@@ -132,7 +129,7 @@ def test_wikipedia_articles_embedding_store(
     mock_faiss__from_documents.assert_called_once()
 
 
-# def test_wikipedia_anti_recommendations(  # noqa: PLR0913
+# def test_wikipedia_anti_recommendations(
 #     embedding_database: EmbeddingDatabase.Descriptor,
 #     article: wikipedia.Article,
 #     anti_recommendation_graph: tuple[
@@ -177,7 +174,7 @@ def test_wikipedia_anti_recommendations_json_file(
             )
 
 
-def test_wikipedia_arkg_factory(  # noqa: PLR0913
+def test_wikipedia_arkg_asset_factory(
     output_config: OutputConfig,
     anti_recommendation_key: AntiRecommendationKey,
     anti_recommendation_graph: tuple[
@@ -188,16 +185,19 @@ def test_wikipedia_arkg_factory(  # noqa: PLR0913
 ) -> None:
     """Test that wikipedia_arkg_factory successfully materializes a Wikipedia ARKG and writes it to file."""
 
-    wikipedia_arkg_store_descriptor = wikipedia_arkg_factory(*rdf_serialization_tuple)(
-        output_config,
-        AntiRecommendationGraphTuple(
-            anti_recommendation_graphs=anti_recommendation_graph
+    wikipedia_arkg_store_descriptor = cast(
+        ArkgStore.Descriptor,
+        wikipedia_arkg_asset_factory(*rdf_serialization_tuple)(
+            output_config,
+            AntiRecommendationGraphTuple(
+                anti_recommendation_graphs=anti_recommendation_graph
+            ),
         ),
     )
 
     with ArkgStore.open(wikipedia_arkg_store_descriptor) as wikipedia_arkg_store:
         anti_recommendation_node = next(
-            wikipedia_arkg_store.arkg_store.query(anti_recommendation_node_query)
+            wikipedia_arkg_store.arkg_store.query(anti_recommendation_node_query)  # type: ignore[arg-type]
         )
 
     assert (

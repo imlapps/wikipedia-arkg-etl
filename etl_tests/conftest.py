@@ -218,6 +218,7 @@ def embedding_database(
             documents=(document_of_article_with_summary,)
         ),
         embedding_store_directory_path=output_config.parse().openai_embeddings_cache_directory_path,
+        embedding_model=openai_embedding_pipeline.create_embedding_model(),
     ).descriptor
 
 

@@ -1,5 +1,5 @@
 import json
-
+from typing import cast
 from dagster import AssetsDefinition, asset
 
 from etl.stores import ArkgStore, EmbeddingStore
@@ -97,7 +97,7 @@ def wikipedia_articles_embedding_store(
         documents=documents_of_wikipedia_articles_with_summaries.documents,
         output_config=output_config,
     ) as embedding_store:
-        return embedding_store.descriptor
+        return cast(EmbeddingStore.Descriptor, embedding_store.descriptor)
 
 
 @asset
@@ -150,7 +150,7 @@ def wikipedia_anti_recommendations_json_file(
         )
 
 
-def wikipedia_arkg_factory(
+def wikipedia_arkg_asset_factory(
     rdf_serialization_name: RdfSerializationName,
     rdf_mime_type: RdfMimeType,
     rdf_file_extension: RdfFileExtension,
@@ -190,6 +190,6 @@ def wikipedia_arkg_factory(
 
 
 wikipedia_arkg_assets = [
-    wikipedia_arkg_factory(*rdf_serialization_tuple)
+    wikipedia_arkg_asset_factory(*rdf_serialization_tuple)
     for rdf_serialization_tuple in rdf_serializations
 ]

@@ -24,12 +24,12 @@ class OpenaiEmbeddingPipeline(EmbeddingPipeline):
         openai_embeddings_cache_directory_path: Path
     ) -> None:
         self.__openai_settings = openai_settings
-        self.__openai_embeddings_cache_directory_path: Path = (
+        self.__openai_embeddings_cache_directory_path = (
             openai_embeddings_cache_directory_path
         )
 
     @override
-    def _create_embedding_model(self) -> Embeddings:
+    def create_embedding_model(self) -> Embeddings:
         """Create and return an OpenAI embedding model."""
 
         self.__openai_embeddings_cache_directory_path.mkdir(parents=True, exist_ok=True)

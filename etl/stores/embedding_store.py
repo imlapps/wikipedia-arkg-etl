@@ -1,6 +1,5 @@
 from pathlib import Path
-from typing import Self
-import ctypes
+from typing import Self, cast
 from dataclasses import dataclass
 
 from langchain.docstore.document import Document
@@ -19,12 +18,13 @@ class EmbeddingStore:
     class Descriptor:
         """A dataclass that holds the Path of the resource stored in database."""
 
+        embedding_model: Embeddings
         embedding_store_directory_path: Path
 
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback):  # noqa: ANN001
         del self.__embedding_store
 
     def __init__(
@@ -32,9 +32,11 @@ class EmbeddingStore:
         *,
         embedding_store: VectorStore,
         embedding_store_directory_path: Path,
+        embedding_model: Embeddings,
     ) -> None:
         self.__embedding_store = embedding_store
         self.__embedding_store_directory_path = embedding_store_directory_path
+        self.__embedding_model = embedding_model
 
     @classmethod
     def create(
@@ -50,20 +52,25 @@ class EmbeddingStore:
 
         parsed_output_config = output_config.parse()
 
-        embedding_store: FAISS = OpenaiEmbeddingPipeline(
+        openai_embedding_pipeline = OpenaiEmbeddingPipeline(
             openai_settings=openai_settings,
             openai_embeddings_cache_directory_path=parsed_output_config.openai_embeddings_cache_directory_path,
-        ).create_embedding_store(documents=documents)
+        )
+        embedding_store = cast(
+            FAISS,
+            openai_embedding_pipeline.create_embedding_store(documents=documents),
+        )
 
         embedding_store_directory_path = (
             parsed_output_config.openai_embeddings_directory_path
         )
 
-        embedding_store.save_local(embedding_store_directory_path)
+        embedding_store.save_local(str(embedding_store_directory_path))
 
         return cls(
             embedding_store=embedding_store,
             embedding_store_directory_path=embedding_store_directory_path,
+            embedding_model=openai_embedding_pipeline.create_embedding_model(),
         )
 
     @classmethod
@@ -75,10 +82,11 @@ class EmbeddingStore:
 
         return cls(
             embedding_store=FAISS.load_local(
-                folder_path=descriptor.embedding_store_directory_path,
-                embeddings=OpenaiEmbeddingPipeline.create_embedding_model(),
+                folder_path=str(descriptor.embedding_store_directory_path),
+                embeddings=descriptor.embedding_model,
             ),
             embedding_store_directory_path=descriptor.embedding_store_directory_path,
+            embedding_model=descriptor.embedding_model,
         )
 
     @property
@@ -86,7 +94,8 @@ class EmbeddingStore:
         """The handle of the embedding store in the EmbeddingDatabase."""
 
         return EmbeddingStore.Descriptor(
-            embedding_store_directory_path=self.__embedding_store_directory_path
+            embedding_store_directory_path=self.__embedding_store_directory_path,
+            embedding_model=self.__embedding_model,
         )
 
     @property
