@@ -19,9 +19,7 @@ class EmbeddingPipeline(ABC):
         *,
         documents: tuple[Document, ...],
     ) -> VectorStore:
-        """
-        Return an embedding store that contains embeddings of Documents.
-        """
+        """Return an embedding store that contains embeddings of Documents."""
 
         return FAISS.from_documents(
             documents=list(documents),

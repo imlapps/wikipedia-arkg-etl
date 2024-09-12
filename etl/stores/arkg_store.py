@@ -42,7 +42,7 @@ class ArkgStore:
 
         return cls(
             arkg_store=ArkgBuilderPipeline(
-                arkg_store_path=arkg_store_path,
+                arkg_store_directory_path=arkg_store_path,
                 requests_cache_directory=requests_cache_directory,
             ).construct_graph(anti_recommendation_graphs.anti_recommendation_graphs),
             arkg_store_path=arkg_store_path,

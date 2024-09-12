@@ -75,9 +75,9 @@ class OutputConfig(ConfigurableResource):  # type: ignore[misc]
 
         @property
         def wikipedia_arkg_store_directory_path(self) -> Path:
-            """The Path of the directory that contains a Wikipedia ARKG Store"""
+            """The Path of the directory that contains a Wikipedia ARKG Store."""
 
-            return self.output_directory_path / "wikipedia_arkg"
+            return self.anti_recommendations_directory_path / "wikipedia_arkg_store"
 
     output_directory_path: str
 

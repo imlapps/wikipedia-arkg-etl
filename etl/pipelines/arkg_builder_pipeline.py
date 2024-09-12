@@ -15,11 +15,11 @@ class ArkgBuilderPipeline:
     """
 
     def __init__(
-        self, *, arkg_store_path: Path, requests_cache_directory: Path
+        self, *, arkg_store_directory_path: Path, requests_cache_directory: Path
     ) -> None:
-        arkg_store_path.mkdir(exist_ok=True, parents=True)
+        arkg_store_directory_path.mkdir(exist_ok=True, parents=True)
         requests_cache_directory.mkdir(parents=True, exist_ok=True)
-        self.__arkg_store = Store(arkg_store_path)
+        self.__arkg_store = Store(arkg_store_directory_path)
         self.__cached_session = CachedSession(
             cache_name=requests_cache_directory / "wikidata_identifiers",
             expire_after=3600,

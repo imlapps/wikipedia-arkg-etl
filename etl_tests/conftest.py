@@ -212,7 +212,8 @@ def embedding_store(
     output_config: OutputConfig,
     openai_settings: OpenaiSettings,
 ) -> EmbeddingStore.Descriptor:
-    """Return the descriptor of an EmbeddingDatabase."""
+    """Return the descriptor of an EmbeddingStore."""
+
     parsed_output_config = output_config.parse()
 
     return EmbeddingStore(
@@ -257,7 +258,7 @@ def arkg_builder_pipeline(output_config: OutputConfig) -> ArkgBuilderPipeline:
     parsed_output_config = output_config.parse()
 
     return ArkgBuilderPipeline(
-        arkg_store_path=parsed_output_config.wikipedia_arkg_store_directory_path
+        arkg_store_directory_path=parsed_output_config.wikipedia_arkg_store_directory_path
         / "test",
         requests_cache_directory=parsed_output_config.requests_cache_directory_path,
     )
@@ -342,7 +343,7 @@ def arkg_store(
     ],
     rdf_serialization_tuple: tuple[RdfSerializationName, RdfMimeType, RdfFileExtension],
 ) -> ArkgStore.Descriptor:
-    """Return the descriptor of an ArkgDatabase."""
+    """Return the descriptor of an ArkgStore."""
 
     return ArkgStore(
         arkg_store=arkg_builder_pipeline.construct_graph(anti_recommendation_graph),

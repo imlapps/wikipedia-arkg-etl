@@ -98,6 +98,8 @@ def wikipedia_articles_embedding_store(
         documents=documents_of_wikipedia_articles_with_summaries.documents,
         output_config=output_config,
     ) as embedding_store:
+        embedding_store.save_local()
+
         return cast(EmbeddingStore.Descriptor, embedding_store.descriptor)
 
 

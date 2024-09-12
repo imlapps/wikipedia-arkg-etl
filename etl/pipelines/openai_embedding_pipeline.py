@@ -44,6 +44,7 @@ class OpenaiEmbeddingPipeline(EmbeddingPipeline):
         openai_embeddings_cache_directory_path: Path,
         openai_embedding_model_name: OpenAiEmbeddingModelName,
     ) -> Embeddings:
+        """Create and return an OpenAI embedding model."""
 
         openai_embeddings_cache_directory_path.mkdir(parents=True, exist_ok=True)
 
