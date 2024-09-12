@@ -1,9 +1,9 @@
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Self
 
 import pyoxigraph as ox
 
-from dataclasses import dataclass
 from etl.models import AntiRecommendationGraphTuple
 from etl.models.types import RdfMimeType
 from etl.pipelines.arkg_builder_pipeline import ArkgBuilderPipeline

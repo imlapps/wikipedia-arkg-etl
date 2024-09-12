@@ -1,12 +1,14 @@
 import json
+from typing import cast
 
 from langchain.docstore.document import Document
 from langchain.schema.runnable import RunnableSequence
 from langchain_community.vectorstores import FAISS
 from pytest_mock import MockFixture
-from typing import cast
+
 from etl.assets import (
     documents_of_wikipedia_articles_with_summaries,
+    wikipedia_anti_recommendations,
     wikipedia_anti_recommendations_json_file,
     wikipedia_arkg_asset_factory,
     wikipedia_articles_embedding_store,
@@ -14,7 +16,6 @@ from etl.assets import (
     wikipedia_articles_with_summaries,
     wikipedia_articles_with_summaries_json_file,
 )
-from etl.stores.arkg_store import ArkgStore
 from etl.models import (
     AntiRecommendationGraphTuple,
     DocumentTuple,
@@ -35,7 +36,9 @@ from etl.resources import (
     InputConfig,
     OpenaiSettings,
     OutputConfig,
+    RetrievalAlgorithmParameters,
 )
+from etl.stores import ArkgStore, EmbeddingStore
 
 
 def test_wikipedia_articles_from_storage(input_config: InputConfig) -> None:
@@ -129,24 +132,24 @@ def test_wikipedia_articles_embedding_store(
     mock_faiss__from_documents.assert_called_once()
 
 
-# def test_wikipedia_anti_recommendations(
-#     embedding_database: EmbeddingDatabase.Descriptor,
-#     article: wikipedia.Article,
-#     anti_recommendation_graph: tuple[
-#         tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
-#     ],
-#     retrieval_algorithm_parameters: RetrievalAlgorithmParameters,
-# ) -> None:
-#     """Test that wikipedia_anti_recommendations successfully returns anti_recommendation_graphs."""
+def test_wikipedia_anti_recommendations(
+    embedding_store: EmbeddingStore.Descriptor,
+    article: wikipedia.Article,
+    anti_recommendation_graph: tuple[
+        tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
+    ],
+    retrieval_algorithm_parameters: RetrievalAlgorithmParameters,
+) -> None:
+    """Test that wikipedia_anti_recommendations successfully returns anti_recommendation_graphs."""
 
-#     assert (
-#         wikipedia_anti_recommendations(  # type: ignore[attr-defined]
-#             RecordTuple(records=(article,)),
-#             retrieval_algorithm_parameters,
-#             embedding_database,
-#         ).anti_recommendation_graphs[0]
-#         == anti_recommendation_graph[0]
-#     )
+    assert (
+        wikipedia_anti_recommendations(  # type: ignore[attr-defined]
+            RecordTuple(records=(article,)),
+            retrieval_algorithm_parameters,
+            embedding_store,
+        ).anti_recommendation_graphs[0]
+        == anti_recommendation_graph[0]
+    )
 
 
 def test_wikipedia_anti_recommendations_json_file(

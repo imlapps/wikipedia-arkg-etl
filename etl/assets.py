@@ -1,8 +1,8 @@
 import json
 from typing import cast
+
 from dagster import AssetsDefinition, asset
 
-from etl.stores import ArkgStore, EmbeddingStore
 from etl.models import (
     AntiRecommendationGraphTuple,
     DocumentTuple,
@@ -21,6 +21,7 @@ from etl.resources import (
     OutputConfig,
     RetrievalAlgorithmParameters,
 )
+from etl.stores import ArkgStore, EmbeddingStore
 
 
 @asset

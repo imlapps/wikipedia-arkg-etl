@@ -31,6 +31,6 @@ def test_create_embedding_model(
     """Test that OpenaiEmbeddingPipeline._create_embedding_model returns an Embedding model that is an instance of CacheBackedEmbeddings."""
 
     assert isinstance(
-        openai_embedding_pipeline.create_embedding_model(),
+        openai_embedding_pipeline._create_embedding_model(),  # noqa: SLF001
         CacheBackedEmbeddings,
     )

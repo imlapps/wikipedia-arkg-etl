@@ -9,8 +9,6 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain_openai import OpenAIEmbeddings
 
-from etl.stores.arkg_store import ArkgStore
-from etl.stores.embedding_store import EmbeddingStore
 from etl.models import (
     WIKIPEDIA_BASE_URL,
     AntiRecommendation,
@@ -40,6 +38,8 @@ from etl.resources import (
     OutputConfig,
     RetrievalAlgorithmParameters,
 )
+from etl.stores.arkg_store import ArkgStore
+from etl.stores.embedding_store import EmbeddingStore
 
 
 @pytest.fixture(scope="session")
@@ -206,19 +206,22 @@ def tuple_of_articles_with_summaries(
 
 
 @pytest.fixture(scope="session")
-def embedding_database(
+def embedding_store(
     openai_embedding_pipeline: OpenaiEmbeddingPipeline,
     document_of_article_with_summary: Document,
     output_config: OutputConfig,
+    openai_settings: OpenaiSettings,
 ) -> EmbeddingStore.Descriptor:
     """Return the descriptor of an EmbeddingDatabase."""
+    parsed_output_config = output_config.parse()
 
     return EmbeddingStore(
         embedding_store=openai_embedding_pipeline.create_embedding_store(
             documents=(document_of_article_with_summary,)
         ),
-        embedding_store_directory_path=output_config.parse().openai_embeddings_cache_directory_path,
-        embedding_model=openai_embedding_pipeline.create_embedding_model(),
+        embedding_cache_directory_path=parsed_output_config.openai_embeddings_cache_directory_path,
+        embedding_store_directory_path=parsed_output_config.openai_embeddings_directory_path,
+        embedding_model_name=openai_settings.embedding_model_name,
     ).descriptor
 
 
@@ -331,7 +334,7 @@ def rdf_serialization_tuple() -> (
 
 
 @pytest.fixture(scope="session")
-def arkg_database(
+def arkg_store(
     output_config: OutputConfig,
     arkg_builder_pipeline: ArkgBuilderPipeline,
     anti_recommendation_graph: tuple[

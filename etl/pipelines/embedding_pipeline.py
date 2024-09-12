@@ -10,7 +10,7 @@ class EmbeddingPipeline(ABC):
     """An interface to build embedding pipelines that transform Records into embeddings."""
 
     @abstractmethod
-    def create_embedding_model(self) -> Embeddings:
+    def _create_embedding_model(self) -> Embeddings:
         """Return an embedding model that will be used to create an embedding store."""
 
     @final
@@ -25,5 +25,5 @@ class EmbeddingPipeline(ABC):
 
         return FAISS.from_documents(
             documents=list(documents),
-            embedding=self.create_embedding_model(),
+            embedding=self._create_embedding_model(),
         )
