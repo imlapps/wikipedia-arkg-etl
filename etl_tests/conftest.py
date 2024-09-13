@@ -260,7 +260,7 @@ def arkg_builder_pipeline(output_config: OutputConfig) -> ArkgBuilderPipeline:
     return ArkgBuilderPipeline(
         arkg_store_directory_path=parsed_output_config.wikipedia_arkg_store_directory_path
         / "test",
-        requests_cache_directory=parsed_output_config.requests_cache_directory_path,
+        requests_cache_directory_path=parsed_output_config.requests_cache_directory_path,
     )
 
 
@@ -346,8 +346,8 @@ def arkg_store(
     """Return the descriptor of an ArkgStore."""
 
     return ArkgStore(
-        arkg_store=arkg_builder_pipeline.construct_graph(anti_recommendation_graph),
-        arkg_store_path=output_config.parse().wikipedia_arkg_file_path.with_suffix(
+        store=arkg_builder_pipeline.construct_graph(anti_recommendation_graph),
+        directory_path=output_config.parse().wikipedia_arkg_file_path.with_suffix(
             rdf_serialization_tuple[-1]
         ),
     ).descriptor

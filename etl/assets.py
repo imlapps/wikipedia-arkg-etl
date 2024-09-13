@@ -175,16 +175,16 @@ def wikipedia_arkg_asset_factory(
         parsed_output_config = output_config.parse()
 
         with ArkgStore.create(
-            requests_cache_directory=parsed_output_config.requests_cache_directory_path,
+            requests_cache_directory_path=parsed_output_config.requests_cache_directory_path,
             anti_recommendation_graphs=wikipedia_anti_recommendations,
-            arkg_store_path=parsed_output_config.wikipedia_arkg_store_directory_path,
+            directory_path=parsed_output_config.wikipedia_arkg_store_directory_path,
         ) as wikipedia_arkg_store:
 
             wikipedia_arkg_store.dump(
-                arkg_file_path=parsed_output_config.wikipedia_arkg_file_path.with_suffix(
+                file_path=parsed_output_config.wikipedia_arkg_file_path.with_suffix(
                     rdf_file_extension
                 ),
-                arkg_mime_type=rdf_mime_type,
+                rdf_mime_type=rdf_mime_type,
             )
 
             return wikipedia_arkg_store.descriptor

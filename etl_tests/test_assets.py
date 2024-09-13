@@ -200,7 +200,7 @@ def test_wikipedia_arkg_asset_factory(
 
     with ArkgStore.open(wikipedia_arkg_store_descriptor) as wikipedia_arkg_store:
         anti_recommendation_node = next(
-            wikipedia_arkg_store.arkg_store.query(anti_recommendation_node_query)  # type: ignore[arg-type]
+            wikipedia_arkg_store.query(anti_recommendation_node_query)  # type: ignore[arg-type]
         )
 
     assert (
