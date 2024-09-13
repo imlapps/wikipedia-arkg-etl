@@ -1,9 +1,8 @@
-from langchain_community.vectorstores import VectorStore
-
 from etl.models import WIKIPEDIA_BASE_URL, AntiRecommendation, RecordKeys
-from etl.models.types import DocumentsLimit, ModelQuestion, RecordKey
+from etl.models.types import DocumentsLimit, ModelQuery, RecordKey
 from etl.pipelines import RetrievalPipeline
 from etl.resources import RetrievalAlgorithmParameters
+from etl.stores import VectorStore
 
 
 class AntiRecommendationRetrievalPipeline(RetrievalPipeline):
@@ -27,7 +26,7 @@ class AntiRecommendationRetrievalPipeline(RetrievalPipeline):
         *,
         record_key: RecordKey,
         k: DocumentsLimit,
-    ) -> ModelQuestion:
+    ) -> ModelQuery:
         """Return a query for the retrieval algorithm."""
 
         return f"What are {k} Wikipedia articles that are dissimilar but surprisingly similar to the Wikipedia article {RecordKeys.to_prompt_friendly(record_key)}"
@@ -57,7 +56,7 @@ class AntiRecommendationRetrievalPipeline(RetrievalPipeline):
                     k=k,
                 ),
                 k=k,
-                distance_strategy=self.__retrieval_algorithm_parameters.distance_strategy,
                 score_threshold=self.__retrieval_algorithm_parameters.score_threshold,
+                distance_strategy=self.__retrieval_algorithm_parameters.distance_strategy,
             )
         )

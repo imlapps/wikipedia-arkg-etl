@@ -18,7 +18,7 @@ def test_create_embedding_store(
         FAISS, "from_documents", return_value=None
     )
 
-    openai_embedding_pipeline.create_embedding_store(
+    openai_embedding_pipeline.create_vector_store(
         documents=(document_of_article_with_summary,),
     )
 

@@ -11,8 +11,8 @@ from etl.assets import (
     wikipedia_anti_recommendations,
     wikipedia_anti_recommendations_json_file,
     wikipedia_arkg_asset_factory,
-    wikipedia_articles_embedding_store,
     wikipedia_articles_from_storage,
+    wikipedia_articles_vector_store,
     wikipedia_articles_with_summaries,
     wikipedia_articles_with_summaries_json_file,
 )
@@ -38,7 +38,7 @@ from etl.resources import (
     OutputConfig,
     RetrievalAlgorithmParameters,
 )
-from etl.stores import ArkgStore, EmbeddingStore
+from etl.stores import ArkgStore, VectorStore
 
 
 def test_wikipedia_articles_from_storage(input_config: InputConfig) -> None:
@@ -110,20 +110,20 @@ def test_documents_of_wikipedia_articles_with_summaries(
     )
 
 
-def test_wikipedia_articles_embedding_store(
+def test_wikipedia_articles_vector_store(
     session_mocker: MockFixture,
     openai_settings: OpenaiSettings,
     output_config: OutputConfig,
     faiss: FAISS,
     document_of_article_with_summary: Document,
 ) -> None:
-    """Test that wikipedia_articles_embedding_store calls a method that is required to create an embedding store."""
+    """Test that wikipedia_articles_vector_store calls a method that is required to create an embedding store."""
 
     mock_faiss__from_documents = session_mocker.patch.object(
         FAISS, "from_documents", return_value=faiss
     )
 
-    wikipedia_articles_embedding_store(
+    wikipedia_articles_vector_store(
         output_config,
         openai_settings,
         DocumentTuple(documents=(document_of_article_with_summary,)),
@@ -133,7 +133,7 @@ def test_wikipedia_articles_embedding_store(
 
 
 def test_wikipedia_anti_recommendations(
-    embedding_store: EmbeddingStore.Descriptor,
+    vector_store: VectorStore,
     article: wikipedia.Article,
     anti_recommendation_graph: tuple[
         tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
@@ -146,7 +146,7 @@ def test_wikipedia_anti_recommendations(
         wikipedia_anti_recommendations(  # type: ignore[attr-defined]
             RecordTuple(records=(article,)),
             retrieval_algorithm_parameters,
-            embedding_store,
+            vector_store.descriptor,
         ).anti_recommendation_graphs[0]
         == anti_recommendation_graph[0]
     )

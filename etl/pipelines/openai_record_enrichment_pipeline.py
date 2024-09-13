@@ -6,7 +6,7 @@ from langchain.schema.runnable import RunnablePassthrough, RunnableSerializable
 from langchain_openai import ChatOpenAI
 
 from etl.models import Record, RecordKeys, wikipedia
-from etl.models.types import ModelQuestion, ModelResponse, RecordKey
+from etl.models.types import ModelQuery, ModelResponse, RecordKey
 from etl.pipelines import RecordEnrichmentPipeline
 from etl.resources import OpenaiSettings
 
@@ -25,7 +25,7 @@ class OpenaiRecordEnrichmentPipeline(RecordEnrichmentPipeline):
                 Question: {question}
                 """
 
-    def __create_question(self, record_key: RecordKey) -> ModelQuestion:
+    def __create_question(self, record_key: RecordKey) -> ModelQuery:
         """Return a question for an OpenAI model."""
 
         return f"In 5 sentences, give a summary of {RecordKeys.to_prompt_friendly(record_key)}'s Wikipedia entry."
@@ -46,7 +46,7 @@ class OpenaiRecordEnrichmentPipeline(RecordEnrichmentPipeline):
         return {"question": RunnablePassthrough()} | prompt | model | StrOutputParser()
 
     def __generate_response(
-        self, *, question: ModelQuestion, chain: RunnableSerializable
+        self, *, question: ModelQuery, chain: RunnableSerializable
     ) -> ModelResponse:
         """Invoke the OpenAI large language model and generate a response."""
 

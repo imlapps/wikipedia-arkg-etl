@@ -1,2 +1,2 @@
 from .arkg_store import ArkgStore as ArkgStore
-from .embedding_store import EmbeddingStore as EmbeddingStore
+from .vector_store import VectorStore as VectorStore

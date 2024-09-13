@@ -39,7 +39,7 @@ from etl.resources import (
     RetrievalAlgorithmParameters,
 )
 from etl.stores.arkg_store import ArkgStore
-from etl.stores.embedding_store import EmbeddingStore
+from etl.stores.vector_store import VectorStore
 
 
 @pytest.fixture(scope="session")
@@ -206,24 +206,24 @@ def tuple_of_articles_with_summaries(
 
 
 @pytest.fixture(scope="session")
-def embedding_store(
+def vector_store(
     openai_embedding_pipeline: OpenaiEmbeddingPipeline,
     document_of_article_with_summary: Document,
     output_config: OutputConfig,
     openai_settings: OpenaiSettings,
-) -> EmbeddingStore.Descriptor:
-    """Return the descriptor of an EmbeddingStore."""
+) -> VectorStore:
+    """Return a VectorStore."""
 
     parsed_output_config = output_config.parse()
 
-    return EmbeddingStore(
-        embedding_store=openai_embedding_pipeline.create_embedding_store(
+    return VectorStore(
+        store=openai_embedding_pipeline.create_vector_store(
             documents=(document_of_article_with_summary,)
         ),
-        embedding_cache_directory_path=parsed_output_config.openai_embeddings_cache_directory_path,
-        embedding_store_directory_path=parsed_output_config.openai_embeddings_directory_path,
+        cache_directory_path=parsed_output_config.openai_embeddings_cache_directory_path,
+        directory_path=parsed_output_config.openai_embeddings_directory_path,
         embedding_model_name=openai_settings.embedding_model_name,
-    ).descriptor
+    )
 
 
 @pytest.fixture(scope="session")
@@ -241,12 +241,13 @@ def faiss(openai_settings: OpenaiSettings) -> FAISS:  # noqa: ARG001
 
 @pytest.fixture(scope="session")
 def anti_recommendation_retrieval_pipeline(
-    faiss: FAISS, retrieval_algorithm_parameters: RetrievalAlgorithmParameters
+    vector_store: VectorStore,
+    retrieval_algorithm_parameters: RetrievalAlgorithmParameters,
 ) -> AntiRecommendationRetrievalPipeline:
     """Return an AntiRecommendationRetrievalPipeline object."""
 
     return AntiRecommendationRetrievalPipeline(
-        vector_store=faiss,
+        vector_store=vector_store,
         retrieval_algorithm_parameters=retrieval_algorithm_parameters,
     )
 

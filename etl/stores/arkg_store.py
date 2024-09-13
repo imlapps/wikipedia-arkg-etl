@@ -14,7 +14,7 @@ class ArkgStore:
 
     @dataclass(frozen=True)
     class Descriptor:
-        """A dataclass that holds the Path of the directory that contains an ARKG."""
+        """A dataclass that holds the Path of a directory that contains an ARKG."""
 
         directory_path: Path
 
@@ -59,7 +59,7 @@ class ArkgStore:
 
     @property
     def descriptor(self) -> Descriptor:
-        """The handle of the ARKG stored in the ArkgDatabase."""
+        """The handle of the ArkgStore."""
 
         return ArkgStore.Descriptor(self.__directory_path)
 

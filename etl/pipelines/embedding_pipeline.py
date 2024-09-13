@@ -14,12 +14,12 @@ class EmbeddingPipeline(ABC):
         """Return an embedding model that will be used to create an embedding store."""
 
     @final
-    def create_embedding_store(
+    def create_vector_store(
         self,
         *,
         documents: tuple[Document, ...],
     ) -> VectorStore:
-        """Return an embedding store that contains embeddings of Documents."""
+        """Return a vector store that contains Document embeddings."""
 
         return FAISS.from_documents(
             documents=list(documents),

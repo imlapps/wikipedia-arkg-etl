@@ -21,7 +21,7 @@ from etl.resources import (
     OutputConfig,
     RetrievalAlgorithmParameters,
 )
-from etl.stores import ArkgStore, EmbeddingStore
+from etl.stores import ArkgStore, VectorStore
 
 
 @asset
@@ -86,34 +86,32 @@ def documents_of_wikipedia_articles_with_summaries(
 
 
 @asset
-def wikipedia_articles_embedding_store(
+def wikipedia_articles_vector_store(
     output_config: OutputConfig,
     openai_settings: OpenaiSettings,
     documents_of_wikipedia_articles_with_summaries: DocumentTuple,
-) -> EmbeddingStore.Descriptor:
+) -> VectorStore.Descriptor:
     """Materialize an asset of Wikipedia articles embeddings."""
 
-    with EmbeddingStore.create(
+    with VectorStore.create(
         openai_settings=openai_settings,
         documents=documents_of_wikipedia_articles_with_summaries.documents,
         output_config=output_config,
-    ) as embedding_store:
-        embedding_store.save_local()
+    ) as vector_store:
+        vector_store.save_local()
 
-        return cast(EmbeddingStore.Descriptor, embedding_store.descriptor)
+        return cast(VectorStore.Descriptor, vector_store.descriptor)
 
 
 @asset
 def wikipedia_anti_recommendations(
     wikipedia_articles_from_storage: RecordTuple,
     retrieval_algorithm_parameters: RetrievalAlgorithmParameters,
-    wikipedia_articles_embedding_store: EmbeddingStore.Descriptor,
+    wikipedia_articles_vector_store: VectorStore.Descriptor,
 ) -> AntiRecommendationGraphTuple:
     """Materialize an asset of Wikipedia anti-recommendations."""
 
-    with EmbeddingStore.open(
-        wikipedia_articles_embedding_store
-    ) as wikipedia_embedding_store:
+    with VectorStore.open(wikipedia_articles_vector_store) as wikipedia_vector_store:
 
         return AntiRecommendationGraphTuple(
             anti_recommendation_graphs=tuple(
@@ -122,7 +120,7 @@ def wikipedia_anti_recommendations(
                     tuple(
                         anti_recommendation.key
                         for anti_recommendation in AntiRecommendationRetrievalPipeline(
-                            vector_store=wikipedia_embedding_store.embedding_store,
+                            vector_store=wikipedia_vector_store,
                             retrieval_algorithm_parameters=retrieval_algorithm_parameters,
                         ).retrieve_documents(record_key=record.key, k=7)
                         if anti_recommendation.key != record.key
