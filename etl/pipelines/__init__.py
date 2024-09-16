@@ -1,3 +1,6 @@
+from .arkg_builder_pipeline import (
+    ArkgBuilderPipeline as ArkgBuilderPipeline,
+)  # isort:skip
 from .embedding_pipeline import EmbeddingPipeline as EmbeddingPipeline
 from .openai_embedding_pipeline import (
     OpenaiEmbeddingPipeline as OpenaiEmbeddingPipeline,

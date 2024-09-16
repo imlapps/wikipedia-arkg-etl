@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from etl.models.types import RecordKey
 
@@ -18,3 +18,8 @@ class Record(BaseModel):
     ]
 
     model_config = ConfigDict(extra="allow")
+
+    @field_validator("key")
+    @classmethod
+    def replace_space_with_underscore(cls, record_key: str) -> RecordKey:
+        return record_key.replace(" ", "_")

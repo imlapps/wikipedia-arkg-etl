@@ -6,29 +6,40 @@ from faiss import IndexFlatL2
 from langchain.docstore.document import Document
 from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain_openai import OpenAIEmbeddings
 
-from etl.models import wikipedia
-from etl.models.anti_recommendation import AntiRecommendation
+from etl.models import (
+    WIKIPEDIA_BASE_URL,
+    AntiRecommendation,
+    rdf_serializations,
+    wikipedia,
+)
 from etl.models.types import (
     AntiRecommendationKey,
     DataFileName,
-    EnrichmentType,
     ModelResponse,
+    RdfFileExtension,
+    RdfMimeType,
+    RdfSerializationName,
     RecordKey,
+    SparqlQuery,
 )
 from etl.pipelines import (
     AntiRecommendationRetrievalPipeline,
+    ArkgBuilderPipeline,
     OpenaiEmbeddingPipeline,
     OpenaiRecordEnrichmentPipeline,
 )
 from etl.readers import WikipediaReader
 from etl.resources import (
-    InputDataFilesConfig,
-    OpenaiPipelineConfig,
+    InputConfig,
     OpenaiSettings,
     OutputConfig,
+    RetrievalAlgorithmParameters,
 )
+from etl.stores.arkg_store import ArkgStore
+from etl.stores.vector_store import VectorStore
 
 
 @pytest.fixture(scope="session")
@@ -52,17 +63,18 @@ def input_data_files_directory_path() -> Path:
 
 
 @pytest.fixture(scope="session")
-def input_data_files_config(
-    data_file_names: tuple[DataFileName, ...], input_data_files_directory_path: Path
-) -> InputDataFilesConfig:
+def input_config(
+    data_file_names: tuple[DataFileName, ...],
+    input_data_files_directory_path: Path,
+) -> InputConfig:
     """
-    Return an InputDataFilesConfig object.
+    Return an InputConfig object.
     Skip all tests that use this fixture if input data files are absent from the ETL.
     """
 
     if input_data_files_directory_path.exists():
-        return InputDataFilesConfig.default(
-            data_files_directory_path_default=input_data_files_directory_path,
+        return InputConfig.default(
+            data_directory_path_default=input_data_files_directory_path,
             data_file_names_default=data_file_names,
         )
     pytest.skip(reason="don't have input data files.")
@@ -81,14 +93,10 @@ def output_config() -> OutputConfig:
 
 
 @pytest.fixture(scope="session")
-def wikipedia_reader(
-    input_data_files_config: InputDataFilesConfig,
-) -> WikipediaReader:
+def wikipedia_reader(input_config: InputConfig) -> WikipediaReader:
     """Return a WikipediaReaderobject."""
 
-    return WikipediaReader(
-        data_file_paths=input_data_files_config.parse().data_file_paths
-    )
+    return WikipediaReader(data_file_paths=input_config.parse().data_file_paths)
 
 
 @pytest.fixture(scope="session")
@@ -105,32 +113,22 @@ def openai_settings() -> OpenaiSettings:
 
 
 @pytest.fixture(scope="session")
-def enrichment_type() -> EnrichmentType:
-    """Return a summary enrichment type."""
+def retrieval_algorithm_parameters() -> RetrievalAlgorithmParameters:
+    """Return a RetrievalAlgorithmParameters object."""
 
-    return EnrichmentType.SUMMARY
-
-
-@pytest.fixture(scope="session")
-def openai_pipeline_config(
-    openai_settings: OpenaiSettings,
-    enrichment_type: EnrichmentType,
-) -> OpenaiPipelineConfig:
-    """Return an OpenaiPipelineConfig object."""
-
-    return OpenaiPipelineConfig(
-        openai_settings=openai_settings,
-        enrichment_type=enrichment_type,
+    return RetrievalAlgorithmParameters(
+        distance_strategy=DistanceStrategy.COSINE,
+        score_threshold=0.5,
     )
 
 
 @pytest.fixture(scope="session")
 def openai_record_enrichment_pipeline(
-    openai_pipeline_config: OpenaiPipelineConfig,
+    openai_settings: OpenaiSettings,
 ) -> OpenaiRecordEnrichmentPipeline:
     """Return an OpenaiRecordEnrichmentPipeline object."""
 
-    return OpenaiRecordEnrichmentPipeline(openai_pipeline_config=openai_pipeline_config)
+    return OpenaiRecordEnrichmentPipeline(openai_settings=openai_settings)
 
 
 @pytest.fixture(scope="session")
@@ -140,7 +138,8 @@ def openai_embedding_pipeline(
     """Return an OpenaiEmbedddingPipeline object."""
 
     return OpenaiEmbeddingPipeline(
-        openai_settings=openai_settings, output_config=output_config
+        openai_settings=openai_settings,
+        openai_embeddings_cache_directory_path=output_config.parse().openai_embeddings_cache_directory_path,
     )
 
 
@@ -171,7 +170,7 @@ def article(record_key: RecordKey) -> wikipedia.Article:
 
     return wikipedia.Article(
         title=record_key,
-        url="https://en.wikipedia.org/wiki/" + record_key.replace(" ", "_"),
+        url=WIKIPEDIA_BASE_URL + record_key,
     )
 
 
@@ -190,11 +189,10 @@ def document_of_article_with_summary(
     article_with_summary: wikipedia.Article,
 ) -> Document:
     """Return a Document of a wikipedia.Article object with a set summary field."""
+
     return Document(
         page_content=str(article_with_summary.model_dump().get("summary")),
-        metadata={
-            "source": f"https://en.wikipedia.org/wiki/{article_with_summary.key}"
-        },
+        metadata={"source": WIKIPEDIA_BASE_URL + article_with_summary.key},
     )
 
 
@@ -205,6 +203,27 @@ def tuple_of_articles_with_summaries(
     """Return a tuple of wikipedia.Articles that have summaries."""
 
     return (article_with_summary,)
+
+
+@pytest.fixture(scope="session")
+def vector_store(
+    openai_embedding_pipeline: OpenaiEmbeddingPipeline,
+    document_of_article_with_summary: Document,
+    output_config: OutputConfig,
+    openai_settings: OpenaiSettings,
+) -> VectorStore:
+    """Return a VectorStore."""
+
+    parsed_output_config = output_config.parse()
+
+    return VectorStore(
+        store=openai_embedding_pipeline.create_vector_store(
+            documents=(document_of_article_with_summary,)
+        ),
+        cache_directory_path=parsed_output_config.openai_embeddings_cache_directory_path,
+        directory_path=parsed_output_config.openai_embeddings_directory_path,
+        embedding_model_name=openai_settings.embedding_model_name,
+    )
 
 
 @pytest.fixture(scope="session")
@@ -222,18 +241,35 @@ def faiss(openai_settings: OpenaiSettings) -> FAISS:  # noqa: ARG001
 
 @pytest.fixture(scope="session")
 def anti_recommendation_retrieval_pipeline(
-    faiss: FAISS,
+    vector_store: VectorStore,
+    retrieval_algorithm_parameters: RetrievalAlgorithmParameters,
 ) -> AntiRecommendationRetrievalPipeline:
     """Return an AntiRecommendationRetrievalPipeline object."""
 
-    return AntiRecommendationRetrievalPipeline(faiss)
+    return AntiRecommendationRetrievalPipeline(
+        vector_store=vector_store,
+        retrieval_algorithm_parameters=retrieval_algorithm_parameters,
+    )
+
+
+@pytest.fixture(scope="session")
+def arkg_builder_pipeline(output_config: OutputConfig) -> ArkgBuilderPipeline:
+    """Return an ArkgBuilderPipeline object."""
+
+    parsed_output_config = output_config.parse()
+
+    return ArkgBuilderPipeline(
+        arkg_store_directory_path=parsed_output_config.wikipedia_arkg_store_directory_path
+        / "test",
+        requests_cache_directory_path=parsed_output_config.requests_cache_directory_path,
+    )
 
 
 @pytest.fixture(scope="session")
 def anti_recommendation_key() -> AntiRecommendationKey:
     "Return a sample anti-recommendation key."
 
-    return "Sankoré Madrasah"
+    return "Sankoré_Madrasah"
 
 
 @pytest.fixture(scope="session")
@@ -244,8 +280,7 @@ def anti_recommendation_article(
 
     return wikipedia.Article(
         title=anti_recommendation_key,
-        url="https://en.wikipedia.org/wiki/"
-        + anti_recommendation_key.replace(" ", "_"),
+        url=WIKIPEDIA_BASE_URL + anti_recommendation_key,
         summary="""Sankore Madrasah is an ancient center of learning located in Timbuktu, Mali, and is one of
                    the three prestigious madrassas that comprise the University of Timbuktu. Established in the 14th century,
                    it became a significant institution for higher education, attracting scholars from across Africa and the Islamic world.
@@ -264,9 +299,7 @@ def document_of_anti_recommendation_article(
 
     return Document(
         page_content=str(anti_recommendation_article.model_dump().get("summary")),
-        metadata={
-            "source": f"https://en.wikipedia.org/wiki/{anti_recommendation_article.key}"
-        },
+        metadata={"source": WIKIPEDIA_BASE_URL + anti_recommendation_article.key},
     )
 
 
@@ -291,3 +324,52 @@ def anti_recommendation_graph(
     """Return a tuple containing an anti_recommendation_graph."""
 
     return ((record_key, (anti_recommendation_key,)),)
+
+
+@pytest.fixture(scope="session")
+def rdf_serialization_tuple() -> (
+    tuple[RdfSerializationName, RdfMimeType, RdfFileExtension]
+):
+    """Return a tuple from the rdf_serializations frozenset."""
+
+    return next(iter(rdf_serializations))
+
+
+@pytest.fixture(scope="session")
+def arkg_store(
+    output_config: OutputConfig,
+    arkg_builder_pipeline: ArkgBuilderPipeline,
+    anti_recommendation_graph: tuple[
+        tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
+    ],
+    rdf_serialization_tuple: tuple[RdfSerializationName, RdfMimeType, RdfFileExtension],
+) -> ArkgStore.Descriptor:
+    """Return the descriptor of an ArkgStore."""
+
+    return ArkgStore(
+        store=arkg_builder_pipeline.construct_graph(anti_recommendation_graph),
+        directory_path=output_config.parse().wikipedia_arkg_file_path.with_suffix(
+            rdf_serialization_tuple[-1]
+        ),
+    ).descriptor
+
+
+@pytest.fixture(scope="session")
+def record_key_wikidata_identifier() -> RecordKey:
+    """Return the Wikipedia identifier of the record_key `Mouseion`"""
+
+    return "Q684645"
+
+
+@pytest.fixture(scope="session")
+def anti_recommendation_node_query(
+    record_key_wikidata_identifier: RecordKey,
+) -> SparqlQuery:
+    """Return a SPARQL query that fetches a record_key's anti-recommendation from an RDFStore."""
+
+    return f"""\
+    PREFIX schema: <http://schema.org/>
+    PREFIX wd: <http://www.wikidata.org/entity/>
+
+    SELECT ?anti_recommendation WHERE {{?anti_recommendation schema:itemReviewed wd:{record_key_wikidata_identifier}}}
+    """

@@ -11,7 +11,6 @@ def test_enrich_records(
     openai_record_enrichment_pipeline: OpenaiRecordEnrichmentPipeline,
     article: wikipedia.Article,
     openai_model_response: ModelResponse,
-    article_with_summary: wikipedia.Article,
 ) -> None:
     """Test that OpenaiRecordEnrichmentPipeline.enrich_records returns enriched Records."""
 
@@ -24,5 +23,5 @@ def test_enrich_records(
         openai_record_enrichment_pipeline.enrich_record(record=article).model_dump(
             by_alias=True
         )["summary"]
-        == article_with_summary.summary
+        == openai_model_response
     )
