@@ -17,13 +17,13 @@ from etl.models import (
 )
 from etl.models.types import (
     AntiRecommendationKey,
-    DataFileName,
-    ModelResponse,
-    RdfFileExtension,
+    NonBlankString as DataFileName,
+    NonBlankString as ModelResponse,
+    NonBlankString as RdfFileExtension,
     RdfMimeType,
-    RdfSerializationName,
+    NonBlankString as RdfSerializationName,
     RecordKey,
-    SparqlQuery,
+    NonBlankString as SparqlQuery,
 )
 from etl.pipelines import (
     AntiRecommendationRetrievalPipeline,

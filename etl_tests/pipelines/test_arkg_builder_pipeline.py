@@ -1,4 +1,8 @@
-from etl.models.types import AntiRecommendationKey, RecordKey, SparqlQuery
+from etl.models.types import (
+    AntiRecommendationKey,
+    RecordKey,
+    NonBlankString as SparqlQuery,
+)
 from etl.namespaces import ARKG
 from etl.pipelines import ArkgBuilderPipeline
 

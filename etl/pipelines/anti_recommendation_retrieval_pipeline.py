@@ -1,5 +1,6 @@
 from etl.models import WIKIPEDIA_BASE_URL, AntiRecommendation, RecordKeys
-from etl.models.types import DocumentsLimit, ModelQuery, RecordKey
+from etl.models.types import RecordsLimit as DocumentsLimit, RecordKey
+from etl.models.types import NonBlankString as ModelQuery
 from etl.pipelines import RetrievalPipeline
 from etl.resources import RetrievalAlgorithmParameters
 from etl.stores import VectorStore

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from dagster import ConfigurableResource, EnvVar
 
 if TYPE_CHECKING:
-    from etl.models.types import DataFileName
+    from etl.models.types import NonBlankString as DataFileName, RecordsLimit
 
 
 class InputConfig(ConfigurableResource):  # type: ignore[misc]
@@ -29,7 +29,7 @@ class InputConfig(ConfigurableResource):  # type: ignore[misc]
 
         data_directory_path: Path
         data_file_paths: frozenset[Path]
-        records_limit: int
+        records_limit: RecordsLimit
 
     data_directory_path: str
     data_file_names: list[str]

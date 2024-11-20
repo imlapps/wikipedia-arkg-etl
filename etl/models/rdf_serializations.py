@@ -1,4 +1,8 @@
-from etl.models.types import RdfFileExtension, RdfMimeType, RdfSerializationName
+from etl.models.types import (
+    NonBlankString as RdfFileExtension,
+    RdfMimeType,
+    NonBlankString as RdfSerializationName,
+)
 
 """
 A frozenset containing a tuple of RDF serializations.

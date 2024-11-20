@@ -3,7 +3,7 @@ from typing import Self
 from pydantic import Field
 
 from etl.models.record import Record
-from etl.models.types import RecordKey, Summary
+from etl.models.types import RecordKey, NonBlankString as Summary
 
 
 class Article(Record):

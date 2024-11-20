@@ -7,10 +7,13 @@ from langchain.docstore.document import Document
 from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
 
-from etl.models.types.documents_limit import DocumentsLimit
-from etl.models.types.model_query import ModelQuery
-from etl.models.types.open_ai_embedding_model_name import OpenAiEmbeddingModelName
-from etl.models.types.score_threshold import ScoreThreshold
+from etl.models.types import (
+    NonBlankString as ModelQuery,
+    ScoreThreshold,
+    OpenAiEmbeddingModelName,
+    RecordsLimit as DocumentsLimit,
+)
+
 from etl.pipelines import OpenaiEmbeddingPipeline
 from etl.resources import OpenaiSettings
 from etl.resources.output_config import OutputConfig

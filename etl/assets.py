@@ -9,7 +9,11 @@ from etl.models import (
     RecordTuple,
     rdf_serializations,
 )
-from etl.models.types import RdfFileExtension, RdfMimeType, RdfSerializationName
+from etl.models.types import (
+    NonBlankString as RdfFileExtension,
+    RdfMimeType,
+    NonBlankString as RdfSerializationName,
+)
 from etl.pipelines import (
     AntiRecommendationRetrievalPipeline,
     OpenaiRecordEnrichmentPipeline,

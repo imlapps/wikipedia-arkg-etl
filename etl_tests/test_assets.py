@@ -24,12 +24,12 @@ from etl.models import (
 )
 from etl.models.types import (
     AntiRecommendationKey,
-    ModelResponse,
-    RdfFileExtension,
+    NonBlankString as ModelResponse,
+    NonBlankString as RdfFileExtension,
     RdfMimeType,
-    RdfSerializationName,
+    NonBlankString as RdfSerializationName,
     RecordKey,
-    SparqlQuery,
+    NonBlankString as SparqlQuery,
 )
 from etl.namespaces import ARKG
 from etl.resources import (

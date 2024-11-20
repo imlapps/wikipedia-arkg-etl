@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from etl.models import AntiRecommendation
-from etl.models.types import DocumentsLimit, RecordKey
+from etl.models.types import RecordsLimit as DocumentsLimit, RecordKey
 
 
 class RetrievalPipeline(ABC):

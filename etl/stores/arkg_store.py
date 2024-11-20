@@ -5,7 +5,7 @@ from typing import Self
 import pyoxigraph as ox
 
 from etl.models import AntiRecommendationGraphTuple
-from etl.models.types import RdfMimeType, SparqlQuery
+from etl.models.types import RdfMimeType, NonBlankString as SparqlQuery
 from etl.pipelines.arkg_builder_pipeline import ArkgBuilderPipeline
 
 

@@ -2,7 +2,7 @@ from langchain.schema.runnable import RunnableSequence
 from pytest_mock import MockFixture
 
 from etl.models import wikipedia
-from etl.models.types import ModelResponse
+from etl.models.types import NonBlankString as ModelResponse
 from etl.pipelines import OpenaiRecordEnrichmentPipeline
 
 
