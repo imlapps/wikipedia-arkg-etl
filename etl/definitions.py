@@ -19,6 +19,7 @@ definitions = Definitions(
             / "input"
             / "data_files",
             data_file_names_default=("mini-wikipedia.output.txt",),
+            records_limit=10,
         ),
         "openai_settings": OpenaiSettings(
             openai_api_key=EnvVar("OPENAI_API_KEY").get_value("")

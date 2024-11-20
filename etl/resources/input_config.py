@@ -18,6 +18,7 @@ class InputConfig(ConfigurableResource):  # type: ignore[misc]
     Properties include:
     - data_directory_path: The directory path of input data,
     - data_file_names: A list of data file names,
+    - records_limit: The maximum number of records that should be read from a data file.
     """
 
     @dataclass(frozen=True)
@@ -28,9 +29,11 @@ class InputConfig(ConfigurableResource):  # type: ignore[misc]
 
         data_directory_path: Path
         data_file_paths: frozenset[Path]
+        records_limit: int
 
     data_directory_path: str
     data_file_names: list[str]
+    records_limit: int
 
     @classmethod
     def default(
@@ -52,6 +55,7 @@ class InputConfig(ConfigurableResource):  # type: ignore[misc]
         *,
         data_directory_path_default: Path,
         data_file_names_default: tuple[DataFileName, ...],
+        records_limit: int,
     ) -> InputConfig:
         """Return an InputConfig object, with parameter values obtained from environment variables."""
 
@@ -65,6 +69,9 @@ class InputConfig(ConfigurableResource):  # type: ignore[misc]
                         json.dumps(list(data_file_names_default))
                     )
                 )
+            ),
+            records_limit=int(
+                str(EnvVar("ETL_RECORDS_LIMIT").get_value(str(records_limit)))
             ),
         )
 
@@ -81,4 +88,5 @@ class InputConfig(ConfigurableResource):  # type: ignore[misc]
                     for data_file_name in self.data_file_names
                 ]
             ),
+            records_limit=self.records_limit,
         )

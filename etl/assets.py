@@ -30,9 +30,14 @@ def wikipedia_articles_from_storage(
 ) -> RecordTuple:
     """Materialize an asset of Wikipedia articles."""
 
+    parsed_input_config = input_config.parse()
+
     return RecordTuple(
         records=tuple(
-            WikipediaReader(data_file_paths=input_config.parse().data_file_paths).read()
+            WikipediaReader(
+                data_file_paths=parsed_input_config.data_file_paths,
+                records_limit=parsed_input_config.records_limit,
+            ).read()
         )
     )
 

@@ -96,7 +96,12 @@ def output_config() -> OutputConfig:
 def wikipedia_reader(input_config: InputConfig) -> WikipediaReader:
     """Return a WikipediaReaderobject."""
 
-    return WikipediaReader(data_file_paths=input_config.parse().data_file_paths)
+    parsed_input_config = input_config.parse()
+
+    return WikipediaReader(
+        data_file_paths=parsed_input_config.data_file_paths,
+        records_limit=parsed_input_config.records_limit,
+    )
 
 
 @pytest.fixture(scope="session")
