@@ -29,9 +29,7 @@ class WikipediaReader(Reader):
         for wikipedia_jsonl_file_path in self.__wikipedia_jsonl_file_paths:
             if wikipedia_jsonl_file_path:
                 with wikipedia_jsonl_file_path.open(encoding="utf-8") as json_file:
-
                     for json_line in json_file:
-
                         if records_count == self.__records_limit:
                             break
 

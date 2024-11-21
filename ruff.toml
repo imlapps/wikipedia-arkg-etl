@@ -13,6 +13,7 @@ ignore = [
     "ERA001", # Commented-out code
     "FA",     # Missing from __future__ import annotations
     "I001",   # Import block is un-sorted or un-formatted
+    "ISC001", # Implicitly concatenated string literals on one line
     "ICN001", # Pandas should be imported as pd
     "N815",   # Mixed-case variables
     "PLC0414",# Useless-import-alias 

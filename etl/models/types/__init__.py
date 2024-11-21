@@ -16,4 +16,3 @@ from .record_key import RecordKey as RecordKey
 from .score_threshold import ScoreThreshold as ScoreThreshold
 
 from .non_blank_string import NonBlankString as NonBlankString
-from .stripped_string import StrippedString as StrippedString

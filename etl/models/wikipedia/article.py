@@ -14,5 +14,4 @@ class Article(Record):
 
     @classmethod
     def from_record(cls, *, record: Record, summary: Summary | None) -> Self:
-
         return cls(title=record.key, url=record.url, summary=summary)

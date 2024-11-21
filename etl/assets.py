@@ -75,7 +75,6 @@ def wikipedia_articles_with_summaries_json_file(
     with output_config.parse().wikipedia_articles_with_summaries_file_path.open(
         mode="w"
     ) as wikipedia_articles_with_summaries_file:
-
         wikipedia_articles_with_summaries_file.writelines(
             json.dumps(enriched_wikipedia_article.model_dump(by_alias=True))
             for enriched_wikipedia_article in wikipedia_articles_with_summaries.records
@@ -121,7 +120,6 @@ def wikipedia_anti_recommendations(
     """Materialize an asset of Wikipedia anti-recommendations."""
 
     with VectorStore.open(wikipedia_articles_vector_store) as wikipedia_vector_store:
-
         return AntiRecommendationGraphTuple(
             anti_recommendation_graphs=tuple(
                 (
@@ -186,7 +184,6 @@ def wikipedia_arkg_asset_factory(
             anti_recommendation_graphs=wikipedia_anti_recommendations,
             directory_path=parsed_output_config.wikipedia_arkg_store_directory_path,
         ) as wikipedia_arkg_store:
-
             wikipedia_arkg_store.dump(
                 file_path=parsed_output_config.wikipedia_arkg_file_path.with_suffix(
                     rdf_file_extension

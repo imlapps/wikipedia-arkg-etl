@@ -1,10 +1,13 @@
 from pathlib import Path
+import uuid
 
 from pyoxigraph import Literal, NamedNode, Quad, Store
 from requests_cache import CachedSession
 
 from etl.models.types import AntiRecommendationKey, RecordKey
-from etl.namespaces import ARKG, RDF, SCHEMA, WD
+from etl.namespaces import ARKG, RDF, SCHEMA, WD, WIKIBASE
+
+from etl.models import WIKIPEDIA_BASE_URL
 
 
 class ArkgBuilderPipeline:
@@ -25,41 +28,101 @@ class ArkgBuilderPipeline:
             expire_after=3600,
         )
 
-    def __add_anti_recommendation_quads_to_store(
+    def __add_anti_recommendation_model_to_store(
         self,
         *,
         anti_recommendation_keys: tuple[AntiRecommendationKey, ...],
-        item_reviewed: NamedNode,
+        record_key_wikidata_iri: NamedNode,
     ) -> None:
-        """
-        Add `anti-recommendation` Quads to the RDF Store.
+        anti_recommendation_iri = ARKG.anti_recommendation_iri(
+            anti_recommendation_uuid=uuid.uuid4()
+        )
 
-        `item_reviewed` is the IRI of the item that is being anti-recommended.
-
-        Each anti_recommendation_key has 2 Quad expressions in this method:
-        - a `type` Quad that expresses the type of Review the anti_recommendation_key belongs to.
-        - an `item-reviewed` Quad that relates the anti_recommendation_key to the item that is being anti-recommended.
-        """
-        for anti_recommendation_key in anti_recommendation_keys:
-
-            anti_recommendation_iri = ARKG.anti_recommendation_iri(
-                record_key=anti_recommendation_key
+        self.__arkg_store.add(
+            Quad(
+                anti_recommendation_iri,
+                RDF.TYPE,
+                SCHEMA.RECOMMENDATION,
             )
+        )
 
-            self.__arkg_store.add(
-                Quad(
-                    anti_recommendation_iri,
-                    RDF.TYPE,
-                    SCHEMA.RECOMMENDATION,
-                )
+        self.__arkg_store.add(
+            Quad(
+                anti_recommendation_iri,
+                SCHEMA.ABOUT,
+                record_key_wikidata_iri,
+            )
+        )
+
+        for anti_recommendation_key in anti_recommendation_keys:
+            anti_recommendation_key_wikidata_iri = self.__get_wikidata_iri(
+                record_key=anti_recommendation_key
             )
             self.__arkg_store.add(
                 Quad(
                     anti_recommendation_iri,
                     SCHEMA.ITEM_REVIEWED,
-                    item_reviewed,
+                    anti_recommendation_key_wikidata_iri,
                 )
             )
+
+    def __add_wikidata_entity_model_to_store(
+        self, *, record_key_wikidata_iri: NamedNode
+    ) -> None:
+        self.__arkg_store.add(
+            Quad(
+                record_key_wikidata_iri,
+                RDF.TYPE,
+                SCHEMA.THING,
+            ),
+        )
+
+        self.__arkg_store.add(
+            Quad(
+                record_key_wikidata_iri,
+                RDF.TYPE,
+                WIKIBASE.ITEM,
+            )
+        )
+
+    def __add_wikipedia_model_to_store(
+        self, *, record_key: RecordKey, record_key_wikidata_iri: NamedNode
+    ) -> None:
+        record_key_node = NamedNode(WIKIPEDIA_BASE_URL + record_key)
+
+        self.__arkg_store.add(
+            Quad(
+                record_key_node,
+                RDF.TYPE,
+                SCHEMA.ARTICLE,
+            ),
+        )
+
+        self.__arkg_store.add(
+            Quad(
+                record_key_node,
+                SCHEMA.ABOUT,
+                record_key_wikidata_iri,
+            ),
+        )
+
+        self.__arkg_store.add(
+            Quad(
+                record_key_node,
+                SCHEMA.IN_LANGUAGE,
+                Literal("en"),
+            ),
+        )
+
+        self.__arkg_store.add(
+            Quad(
+                record_key_node, SCHEMA.IS_PART_OF, Literal("https://en.wikipedia.org/")
+            )
+        )
+
+        self.__arkg_store.add(
+            Quad(record_key_node, SCHEMA.NAME, Literal(record_key, language="en"))
+        )
 
     def __get_wikidata_iri(self, record_key: RecordKey) -> NamedNode:
         """Return a RDF node that contains the Wikidata IRI of record_key."""
@@ -78,48 +141,21 @@ class ArkgBuilderPipeline:
         self,
         graphs: tuple[tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...],
     ) -> Store:
-        """
-        Return a RDF Store populated with anti_recommendation_graphs.
-
-        Each record_key in the anti_recommendation_graph has 3 Quad expressions in this method:
-        - a `type` Quad that expresses the type of CreativeWork the record_key belongs to.
-        - a `title` Quad that expresses the title of the record_key.
-        - a `url` Quad that expresses the URL of the record_key.
-
-        All anti-recommendations are related to a record_key via the __add_anti_recommendation_quads_to_store method.
-        """
-
         for graph in graphs:
             record_key = graph[0]
             record_key_wikidata_iri = self.__get_wikidata_iri(record_key)
 
-            self.__arkg_store.add(
-                Quad(
-                    record_key_wikidata_iri,
-                    RDF.TYPE,
-                    SCHEMA.WEB_PAGE,
-                ),
+            self.__add_wikidata_entity_model_to_store(
+                record_key_wikidata_iri=record_key_wikidata_iri
             )
 
-            self.__arkg_store.add(
-                Quad(
-                    record_key_wikidata_iri,
-                    SCHEMA.TITLE,
-                    Literal(record_key),
-                )
+            self.__add_wikipedia_model_to_store(
+                record_key=record_key, record_key_wikidata_iri=record_key_wikidata_iri
             )
 
-            self.__arkg_store.add(
-                Quad(
-                    record_key_wikidata_iri,
-                    SCHEMA.URL,
-                    Literal(record_key_wikidata_iri.value),
-                )
-            )
-
-            self.__add_anti_recommendation_quads_to_store(
+            self.__add_anti_recommendation_model_to_store(
                 anti_recommendation_keys=graph[1],
-                item_reviewed=record_key_wikidata_iri,
+                record_key_wikidata_iri=record_key_wikidata_iri,
             )
 
         return self.__arkg_store

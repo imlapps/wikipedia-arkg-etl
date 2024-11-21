@@ -25,5 +25,5 @@ def test_construct_graph(
 
     assert (
         anti_recommendation_node["anti_recommendation"].value
-        == ARKG.anti_recommendation_iri(anti_recommendation_key).value
+        == ARKG.BASE_IRI.value + anti_recommendation_key
     )

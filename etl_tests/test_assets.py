@@ -45,7 +45,8 @@ def test_wikipedia_articles_from_storage(input_config: InputConfig) -> None:
     """Test that wikipedia_articles_from_storage successfully materializes a tuple of Wikipedia articles."""
 
     assert isinstance(
-        wikipedia_articles_from_storage(input_config).records[0], wikipedia.Article  # type: ignore[attr-defined]
+        wikipedia_articles_from_storage(input_config).records[0],
+        wikipedia.Article,  # type: ignore[attr-defined]
     )
 
 
@@ -85,8 +86,9 @@ def test_wikipedia_articles_with_summaries_json_file(
         RecordTuple(records=tuple_of_articles_with_summaries), output_config
     )
 
-    with output_config.parse().wikipedia_articles_with_summaries_file_path.open() as wikipedia_json_file:
-
+    with (
+        output_config.parse().wikipedia_articles_with_summaries_file_path.open() as wikipedia_json_file
+    ):
         iter_tuples_of_articles_with_summaries = iter(tuple_of_articles_with_summaries)
 
         for wikipedia_json_line in wikipedia_json_file:
@@ -167,10 +169,10 @@ def test_wikipedia_anti_recommendations_json_file(
         ),
     )
 
-    with output_config.parse().wikipedia_anti_recommendations_file_path.open() as wikipedia_anti_recommendations_file:
-
+    with (
+        output_config.parse().wikipedia_anti_recommendations_file_path.open() as wikipedia_anti_recommendations_file
+    ):
         for wikipedia_json_line in wikipedia_anti_recommendations_file:
-
             assert (
                 json.loads(wikipedia_json_line)[0][-1]
                 == anti_recommendation_graph[0][0][-1]

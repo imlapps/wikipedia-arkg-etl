@@ -25,6 +25,7 @@ from etl.models.types import (
     RecordKey,
     NonBlankString as SparqlQuery,
 )
+from etl.namespaces.schema import SCHEMA
 from etl.pipelines import (
     AntiRecommendationRetrievalPipeline,
     ArkgBuilderPipeline,
@@ -360,21 +361,8 @@ def arkg_store(
 
 
 @pytest.fixture(scope="session")
-def record_key_wikidata_identifier() -> RecordKey:
-    """Return the Wikipedia identifier of the record_key `Mouseion`"""
-
-    return "Q684645"
-
-
-@pytest.fixture(scope="session")
-def anti_recommendation_node_query(
-    record_key_wikidata_identifier: RecordKey,
-) -> SparqlQuery:
+def anti_recommendation_node_query(record_key: RecordKey) -> SparqlQuery:
     """Return a SPARQL query that fetches a record_key's anti-recommendation from an RDFStore."""
 
-    return f"""\
-    PREFIX schema: <http://schema.org/>
-    PREFIX wd: <http://www.wikidata.org/entity/>
-
-    SELECT ?anti_recommendation WHERE {{?anti_recommendation schema:itemReviewed wd:{record_key_wikidata_identifier}}}
-    """
+    return f'SELECT ?name WHERE {{ {{ ?uuid <{SCHEMA.ABOUT.value}> ?entity {{ ?entity_article <{SCHEMA.ABOUT.value}> ?entity {{?entity_article <{SCHEMA.NAME.value}> "{record_key}"@en }} }} . \
+                                                 ?uuid <{SCHEMA.ITEM_REVIEWED.value}> ?anti_recommendation {{?anti_recommendation_article <{SCHEMA.ABOUT.value}> ?anti_recommendation {{?anti_recommendation_article <{SCHEMA.NAME.value}> ?name}} }} }} }}'
