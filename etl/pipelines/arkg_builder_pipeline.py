@@ -58,6 +58,16 @@ class ArkgBuilderPipeline:
             anti_recommendation_key_wikidata_iri = self.__get_wikidata_iri(
                 record_key=anti_recommendation_key
             )
+
+            self.__add_wikidata_entity_model_to_store(
+                record_key_wikidata_iri=anti_recommendation_key_wikidata_iri
+            )
+
+            self.__add_wikipedia_model_to_store(
+                record_key=anti_recommendation_key,
+                record_key_wikidata_iri=anti_recommendation_key_wikidata_iri,
+            )
+
             self.__arkg_store.add(
                 Quad(
                     anti_recommendation_iri,
@@ -116,7 +126,9 @@ class ArkgBuilderPipeline:
 
         self.__arkg_store.add(
             Quad(
-                record_key_node, SCHEMA.IS_PART_OF, Literal("https://en.wikipedia.org/")
+                record_key_node,
+                SCHEMA.IS_PART_OF,
+                NamedNode("https://en.wikipedia.org/"),
             )
         )
 

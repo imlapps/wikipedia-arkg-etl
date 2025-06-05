@@ -15,4 +15,4 @@ class ARKG:
     def anti_recommendation_iri(anti_recommendation_uuid: UUID) -> NamedNode:
         """Return an AntiRecommendation NamedNode for an ARKG."""
 
-        return NamedNode(ARKG.BASE_IRI.value + ":uuid:" + str(anti_recommendation_uuid))
+        return NamedNode(ARKG.BASE_IRI.value + "uuid:" + str(anti_recommendation_uuid))

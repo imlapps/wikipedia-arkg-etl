@@ -69,9 +69,17 @@ class ArkgStore:
 
         The RDF serialization is determined by arkg_mime_type.
         """
+
         self.__store.dump(
             output=file_path,
-            mime_type=rdf_mime_type,
+            format=ox.RdfFormat.TRIG,
+            prefixes={
+                "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+                "schema": "http://schema.org/",
+                "urn": "http://imlapps.github.io/anti-recommender/anti-recommendation/",
+                "wd": "http://www.wikidata.org/entity/",
+                "wikibase": "http://wikiba.se/ontology#",
+            },
         )
 
     def load(self, file_path: Path, rdf_mime_type: RdfMimeType) -> None:
@@ -80,7 +88,7 @@ class ArkgStore:
 
         The RDF serialization is determined by arkg_mime_type.
         """
-        self.__store.load(input=file_path, mime_type=rdf_mime_type)
+        self.__store.load(input=file_path, format=ox.RdfFormat.TRIG)
 
     def query(self, query: SparqlQuery) -> ox.QuerySolutions | ox.QueryTriples | bool:
         """Execute a SPARQL 1.1 query."""

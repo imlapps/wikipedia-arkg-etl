@@ -45,8 +45,8 @@ def test_wikipedia_articles_from_storage(input_config: InputConfig) -> None:
     """Test that wikipedia_articles_from_storage successfully materializes a tuple of Wikipedia articles."""
 
     assert isinstance(
-        wikipedia_articles_from_storage(input_config).records[0],
-        wikipedia.Article,  # type: ignore[attr-defined]
+        wikipedia_articles_from_storage(input_config).records[0],  # type: ignore[attr-defined]
+        wikipedia.Article,
     )
 
 
@@ -201,11 +201,10 @@ def test_wikipedia_arkg_asset_factory(
     )
 
     with ArkgStore.open(wikipedia_arkg_store_descriptor) as wikipedia_arkg_store:
-        anti_recommendation_node = next(
-            wikipedia_arkg_store.query(anti_recommendation_node_query)  # type: ignore[arg-type]
-        )
 
-    assert (
-        anti_recommendation_node["anti_recommendation"].value
-        == ARKG.anti_recommendation_iri(anti_recommendation_key).value
-    )
+        assert (
+            next(
+                wikipedia_arkg_store.query(anti_recommendation_node_query)  # type: ignore[arg-type]
+            )["name"].value
+            == anti_recommendation_key
+        )

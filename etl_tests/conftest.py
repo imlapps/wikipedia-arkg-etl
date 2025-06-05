@@ -90,6 +90,7 @@ def output_config() -> OutputConfig:
         / "etl"
         / "data"
         / "output"
+        / "test"
     )
 
 
@@ -338,6 +339,7 @@ def rdf_serialization_tuple() -> (
 ):
     """Return a tuple from the rdf_serializations frozenset."""
 
+    # return ("turtle", RdfMimeType.TURTLE, ".nt")
     return next(iter(rdf_serializations))
 
 
@@ -354,9 +356,7 @@ def arkg_store(
 
     return ArkgStore(
         store=arkg_builder_pipeline.construct_graph(anti_recommendation_graph),
-        directory_path=output_config.parse().wikipedia_arkg_file_path.with_suffix(
-            rdf_serialization_tuple[-1]
-        ),
+        directory_path=output_config.parse().wikipedia_arkg_store_directory_path,
     ).descriptor
 
 
