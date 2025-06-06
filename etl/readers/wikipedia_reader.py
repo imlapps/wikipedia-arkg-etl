@@ -33,16 +33,14 @@ class WikipediaReader(Reader):
                         if records_count == self.__records_limit:
                             break
 
-                        record_json = json.loads(json_line)
-
-                        if record_json["type"] != "RECORD":
-                            continue
+                        # if record_json["type"] != "RECORD":
+                        #     continue
 
                         json_obj = json.loads(
                             unidecode(
-                                json.dumps(record_json["record"], ensure_ascii=False)
+                                json.dumps(json.loads(json_line), ensure_ascii=False)
                             )
                         )
 
                         records_count += 1
-                        yield wikipedia.Article(**(json_obj["abstract_info"]))
+                        yield wikipedia.Article(**json_obj)
