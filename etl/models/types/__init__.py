@@ -1,5 +1,5 @@
 from .anti_recommendation_key import AntiRecommendationKey as AntiRecommendationKey
-from .api_key import ApiKey as ApiKey
+from .stripped_string import StrippedString as StrippedString
 
 from .records_limit import RecordsLimit as RecordsLimit
 

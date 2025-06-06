@@ -30,7 +30,7 @@ class OpenaiRecordEnrichmentPipeline(RecordEnrichmentPipeline):
     def __create_question(self, record_key: RecordKey) -> ModelQuery:
         """Return a question for an OpenAI model."""
 
-        return f"In 5 sentences, give a summary of {RecordKeys.to_prompt_friendly(record_key)}'s Wikipedia entry."
+        return f"In 6 sentences, give a summary of {RecordKeys.to_prompt_friendly(record_key)}'s Wikipedia entry."
 
     def __create_chat_model(self) -> ChatOpenAI:
         """Return an OpenAI chat model."""

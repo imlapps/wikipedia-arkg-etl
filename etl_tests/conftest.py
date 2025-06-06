@@ -350,7 +350,7 @@ def arkg_store(
     anti_recommendation_graph: tuple[
         tuple[RecordKey, tuple[AntiRecommendationKey, ...]], ...
     ],
-    rdf_serialization_tuple: tuple[RdfSerializationName, RdfMimeType, RdfFileExtension],
+    rdf_serialization_tuple: tuple[RdfSerializationName, RdfMimeType, RdfFileExtension], # noqa: ARG001
 ) -> ArkgStore.Descriptor:
     """Return the descriptor of an ArkgStore."""
 

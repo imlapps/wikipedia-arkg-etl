@@ -1,14 +1,13 @@
 from dagster import ConfigurableResource
 from pydantic import Field
 
-from typing import Annotated 
 
-from etl.models.types import ApiKey, OpenAiEmbeddingModelName, OpenAiGenerativeModelName
+from etl.models.types import OpenAiEmbeddingModelName, OpenAiGenerativeModelName, StrippedString as ApiKey, StrippedString as BaseUrl
 
 class OpenaiSettings(ConfigurableResource):  # type: ignore[misc]
     """A ConfigurableResource that holds the settings of OpenAI models."""
 
-    base_url: Annotated[str, Field(json_schema_extra={"strip_whitespace": True})] | None = None
+    base_url: BaseUrl| None = None
     openai_api_key: ApiKey = Field(default=..., description="OpenAI API key")
     embedding_model_name: OpenAiEmbeddingModelName = Field(
         default=OpenAiEmbeddingModelName.TEXT_EMBEDDING_3_LARGE

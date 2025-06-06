@@ -63,7 +63,7 @@ class ArkgStore:
 
         return ArkgStore.Descriptor(self.__directory_path)
 
-    def dump(self, file_path: Path, rdf_mime_type: RdfMimeType) -> None:
+    def dump(self, file_path: Path, rdf_mime_type: RdfMimeType) -> None: # noqa: ARG002
         """
         Dump the ARKG Store into a file.
 
@@ -82,7 +82,7 @@ class ArkgStore:
             },
         )
 
-    def load(self, file_path: Path, rdf_mime_type: RdfMimeType) -> None:
+    def load(self, file_path: Path, rdf_mime_type: RdfMimeType) -> None: # noqa: ARG002
         """
         Load an RDF serialization into an ARKG Store and return it.
 

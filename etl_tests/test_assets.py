@@ -31,7 +31,6 @@ from etl.models.types import (
     RecordKey,
     NonBlankString as SparqlQuery,
 )
-from etl.namespaces import ARKG
 from etl.resources import (
     InputConfig,
     OpenaiSettings,

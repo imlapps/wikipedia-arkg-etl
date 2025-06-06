@@ -1,8 +1,7 @@
-from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
-from etl.models.types import RecordKey, NonBlankString as URL
+from etl.models.types import RecordKey, NonBlankString as Url
 
 
 class Record(BaseModel):
@@ -13,7 +12,7 @@ class Record(BaseModel):
     """
 
     key: RecordKey
-    url: URL
+    url: Url
 
     model_config = ConfigDict(extra="allow")
 

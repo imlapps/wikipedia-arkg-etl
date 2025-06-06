@@ -1,7 +1,6 @@
 from uuid import UUID
 from pyoxigraph import NamedNode
 
-from etl.models.types import RecordKey
 
 
 class ARKG:
