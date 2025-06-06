@@ -38,6 +38,7 @@ class OpenaiRecordEnrichmentPipeline(RecordEnrichmentPipeline):
         return ChatOpenAI(
             name=str(self.__openai_settings.generative_model_name.value),
             temperature=self.__openai_settings.temperature,
+            base_url=self.__openai_settings.base_url
         )
 
     def __build_chain(self, model: ChatOpenAI) -> RunnableSerializable:
